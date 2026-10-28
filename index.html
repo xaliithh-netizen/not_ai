@@ -37,6 +37,8 @@
         }
         body { background-color: var(--bg-body); color: var(--text-primary); font-family: 'Google Sans','Roboto',sans-serif; overflow: hidden; transition: background-color .3s; }
         .markdown-body p { margin-bottom: 1rem; line-height: 1.6; color: var(--text-primary); }
+        /* последний абзац без отступа — иконки под ответом стоят вплотную к тексту */
+        .markdown-body > *:last-child { margin-bottom: 0; }
         .markdown-body pre { background-color: var(--bg-sidebar); padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0; border: 1px solid var(--border-color); }
         .markdown-body code { font-family: 'Roboto Mono',monospace; background-color: rgba(128,128,128,.15); padding: .2em .4em; border-radius: 4px; font-size: .9em; }
         .markdown-body pre code { background: none; padding: 0; }
@@ -844,13 +846,13 @@
 
             const btn = (icon, title, onClick, extra) => (
                 <button onClick={onClick} title={title}
-                    className={`w-7 h-7 flex items-center justify-center rounded-full hover:bg-[var(--hover-bg)] transition-colors ${extra || 'text-[var(--text-secondary)]'}`}>
-                    <Icon name={icon} className="w-4 h-4" />
+                    className={`w-6 h-6 flex items-center justify-center rounded-md hover:bg-[var(--hover-bg)] transition-colors ${extra || 'text-[var(--text-secondary)]'}`}>
+                    <Icon name={icon} className="w-3.5 h-3.5" />
                 </button>
             );
 
             return (
-                <div className="mt-2 flex items-center gap-0.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                <div className="mt-1.5 -ml-1.5 flex items-center gap-0.5 opacity-70 group-hover:opacity-100 transition-opacity">
                     {btn(copied ? 'check' : 'copy', copied ? t.copied : t.copyText, copy, copied ? 'text-[var(--accent-blue)]' : '')}
                     {!msg.isError && msg.reasoning && btn('brain', t.viewReasoning, onReasoning)}
                     {!msg.isError && btn('wallet', t.viewCost, onCost)}
@@ -2434,10 +2436,10 @@
                                                 </div>
                                             )}
                                             {msg.role === 'model' && (
-                                                <div className="flex gap-4 group">
+                                                <div className="flex gap-3 group">
                                                     {!safeMode && (
-                                                        <div className="w-8 h-8 rounded-full flex-shrink-0 mt-1 flex items-center justify-center bg-[var(--bg-sidebar)]">
-                                                            <ModelIcon icon={msg.icon} theme={theme} className="w-5 h-5" />
+                                                        <div className="w-7 h-7 rounded-full flex-shrink-0 mt-0.5 flex items-center justify-center bg-[var(--bg-sidebar)]">
+                                                            <ModelIcon icon={msg.icon} theme={theme} className="w-4 h-4" />
                                                         </div>
                                                     )}
                                                     <div className={`flex-1 min-w-0 relative ${msg.isError ? 'text-red-400' : ''}`}>
