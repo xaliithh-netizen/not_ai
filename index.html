@@ -252,6 +252,7 @@
                     ? { order: m.provider.order.map(String), allow_fallbacks: m.provider.allow_fallbacks !== false } : null,
                 reasoning: effort ? { effort } : null,
                 reasoningOptions: Array.isArray(m.reasoningOptions) ? m.reasoningOptions.map(String) : [],
+                nativeSearch: !!m.nativeSearch,
                 pool: Array.isArray(m.pool) ? m.pool.map(String).filter(p => p.includes('/') && p !== id).slice(0, 8) : [],
                 raceWindow: Number.isFinite(Number(m.raceWindow)) ? Math.min(Math.max(Number(m.raceWindow), 0), 10000) : 1500
             };
@@ -652,8 +653,8 @@
                 reqStopped:'⚠️ Запрос был остановлен.', settingsAI:'ИИ и поведение', settingsAppearance:'Внешний вид',
                 settingsData:'Данные аккаунта', attachPhoto:'Прикрепить фото',
                 noApiKey:'⚠️ Не указан API ключ. Откройте настройки и введите ключ OpenRouter.',
-                webSearch:'Веб-поиск', webSearchHint:'Модель сама решает, когда искать (Perplexity Sonar, до 2 запросов)',
-                searchingWeb:'Ищу в интернете', searchedWeb:'Веб-поиск', sources:'Источники',
+                webSearch:'Веб-поиск', webSearchHint:'Модель сама решает, когда искать (Perplexity Sonar, до 2 запросов)', webSearchNativeHint:'Модель ищет своим встроенным поиском',
+                searchingWeb:'Ищу в интернете', searchedWeb:'Веб-поиск', sources:'Источники', modelSearched:'Поиск самой модели',
                 searchLimitNote:'Достигнут лимит поисковых запросов (2).', searchError:'Ошибка поиска',
                 modelsLabel:'Модель', effort:'Глубина рассуждения', effortMedium:'Средняя', effortHigh:'Высокая',
                 effortLabels:{ none:'Выкл.', minimal:'Мин.', low:'Низкая', medium:'Средняя', high:'Высокая', xhigh:'Макс.' },
@@ -689,8 +690,8 @@
                 reqStopped:'⚠️ Anmodningen blev stoppet.', settingsAI:'AI & Adfærd', settingsAppearance:'Udseende',
                 settingsData:'Kontodata', attachPhoto:'Vedhæft billede',
                 noApiKey:'⚠️ Ingen API-nøgle. Åbn indstillinger og indtast din OpenRouter-nøgle.',
-                webSearch:'Websøgning', webSearchHint:'Modellen beslutter selv (Perplexity Sonar, max 2 kald)',
-                searchingWeb:'Søger på nettet', searchedWeb:'Websøgning', sources:'Kilder',
+                webSearch:'Websøgning', webSearchHint:'Modellen beslutter selv (Perplexity Sonar, max 2 kald)', webSearchNativeHint:'Modellen bruger sin egen indbyggede søgning',
+                searchingWeb:'Søger på nettet', searchedWeb:'Websøgning', sources:'Kilder', modelSearched:'Modellens egen søgning',
                 searchLimitNote:'Grænsen for søgninger er nået (2).', searchError:'Søgefejl',
                 modelsLabel:'Model', effort:'Tænkedybde', effortMedium:'Mellem', effortHigh:'Høj',
                 effortLabels:{ none:'Fra', minimal:'Min.', low:'Lav', medium:'Mellem', high:'Høj', xhigh:'Maks.' },
@@ -1436,6 +1437,14 @@
                 let streamFinished = false, finalized = false, reported = false;
                 let mainCost = 0, searchCost = 0, lastGenId = null;
                 let raceWinner = null;
+                /* у модели свой поиск — ищет она сама через OpenRouter, Perplexity не нужен */
+                const nativeOn = webSearch && model.nativeSearch && !(model.pool && model.pool.length);
+                const nativeLinks = [];
+                const noteNative = (urls) => {
+                    urls.forEach(u => { if (u && !nativeLinks.includes(u)) nativeLinks.push(u); });
+                    const entry = { id: 'native', query: t.modelSearched, status: 'done', citations: nativeLinks.slice() };
+                    patch(m => ({ ...m, searches: [...(m.searches || []).filter(x => x.id !== 'native'), entry] }));
+                };
 
                 /* учёт вызывается сразу по завершении потока: он не должен ждать
                    отрисовки, которая во вкладке в фоне может не тикать */
@@ -1492,6 +1501,7 @@
                     if (model.provider) body.provider = model.provider;
                     if (model.reasoning && effectiveEffort) body.reasoning = { effort: effectiveEffort };
                     if (allowTools) { body.tools = [SEARCH_TOOL]; body.tool_choice = 'auto'; }
+                    if (nativeOn) body.tools = [{ type: 'openrouter:web_search', parameters: { engine: 'native', max_uses: MAX_SEARCHES } }];
 
                     const url = `${API_BASE}/v1/chat/completions`;
                     const init = {
@@ -1556,6 +1566,12 @@
                                 firstChunk = false; setIsLoading(false);
                                 patch(m => ({ ...m, actualModel: data.model || '', isThinking: false }));
                             }
+                            /* источники своего поиска приходят аннотациями url_citation */
+                            if (nativeOn) {
+                                const ann = data.choices?.[0]?.delta?.annotations || data.choices?.[0]?.message?.annotations;
+                                if (Array.isArray(ann) && ann.length) noteNative(ann.map(a => a?.url_citation?.url || a?.url).filter(Boolean));
+                                else if (data.usage?.server_tool_use?.web_search_requests > 0 && !nativeLinks.length) noteNative([]);
+                            }
                             const delta = data.choices?.[0]?.delta;
                             if (!delta) continue;
                             if (delta.reasoning) reasoningAcc += delta.reasoning;
@@ -1603,7 +1619,7 @@
                     /* цикл tool-calling */
                     let searchCount = 0, guard = 0;
                     while (guard++ < MAX_SEARCHES + 2) {
-                        const allowTools = webSearch && model.supportsTools !== false && searchCount < MAX_SEARCHES;
+                        const allowTools = !nativeOn && webSearch && model.supportsTools !== false && searchCount < MAX_SEARCHES;
                         const turn = await streamTurn(convo, allowTools);
 
                         if (turn.toolCalls.length && allowTools) {
@@ -2457,7 +2473,7 @@
                                             </button>
                                             <button onClick={() => setWebSearch(!webSearch)} disabled={currentModel.supportsTools === false}
                                                 className={`w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-full transition-colors mb-0.5 ${currentModel.supportsTools === false ? 'opacity-30 cursor-not-allowed' : (webSearch ? 'text-[var(--accent-blue)] bg-[var(--cost-bg)]' : 'text-[var(--text-secondary)] hover:bg-[var(--hover-bg)]')}`}
-                                                title={`${t.webSearch}: ${webSearch ? 'ON' : 'OFF'} — ${t.webSearchHint}`}>
+                                                title={`${t.webSearch}: ${webSearch ? 'ON' : 'OFF'} — ${currentModel.nativeSearch && !(currentModel.pool && currentModel.pool.length) ? t.webSearchNativeHint : t.webSearchHint}`}>
                                                 <Icon name="globe" className="w-5 h-5" />
                                             </button>
                                         </>

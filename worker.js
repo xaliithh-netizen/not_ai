@@ -155,6 +155,8 @@ function normalizeModel(m) {
     reasoningOptions: Array.isArray(m.reasoningOptions)
       ? m.reasoningOptions.filter(isEffort).map(String)
       : [],
+    /* undefined = ещё не проверяли: админка сама определит по провайдерам */
+    nativeSearch: m.nativeSearch === undefined ? undefined : !!m.nativeSearch,
     pool: normPool(m.pool, id),
     raceWindow: normRaceWindow(m.raceWindow)
   };

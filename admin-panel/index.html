@@ -564,6 +564,8 @@
         ? { order: m.provider.order.map(String), allow_fallbacks: m.provider.allow_fallbacks !== false } : null,
       reasoning: (m.reasoning && m.reasoning.effort) ? { effort: String(m.reasoning.effort) } : null,
       reasoningOptions: Array.isArray(m.reasoningOptions) ? m.reasoningOptions.map(String) : [],
+      nativeSearch: !!m.nativeSearch,
+      _nsUnset: m.nativeSearch === undefined,
       pool: pool,
       raceWindow: (m.raceWindow === undefined || m.raceWindow === null || m.raceWindow === '') ? 1500 : Number(m.raceWindow)
     };
@@ -574,6 +576,7 @@
       vision: m.vision, free: m.free, supportsTools: m.supportsTools, maxTokens: m.maxTokens,
       temperature: m.temperature, provider: m._race ? null : m.provider,
       reasoning: m.reasoning, reasoningOptions: m.reasoningOptions,
+      nativeSearch: m._race ? false : !!m.nativeSearch,
       pool: m._race ? m.pool : [], raceWindow: m.raceWindow
     };
   }
@@ -689,6 +692,7 @@
     if (m.free) b += '<span class="chip ok">free</span>';
     if (m.vision) b += '<span class="chip">vision</span>';
     if (m.supportsTools) b += '<span class="chip">tools</span>';
+    if (m.nativeSearch && !m._race) b += '<span class="chip acc">свой поиск</span>';
     if (m.reasoning) b += '<span class="chip acc">' + esc(m.reasoning.effort) + (m.reasoningOptions.length > 1 ? ' ↕' : '') + '</span>';
     if (m.temperature !== null) b += '<span class="chip">t° ' + esc(m.temperature) + '</span>';
     if (!m._race && m.provider) b += '<span class="chip">' + esc(m.provider.order.join(',')) + '</span>';
@@ -732,7 +736,7 @@
   }
 
   function fieldHtml(label, tech, inner, extra) {
-    return '<div><label class="lb">' + label + (tech ? '<span class="tech">' + tech + '</span>' : '') + '</label>' +
+    return '<div><label class="lb">' + label + '</label>' +
       inner + (extra || '') + '</div>';
   }
 
@@ -765,6 +769,14 @@
     if (m.supportsTools && !c.tools) out.push('Модель не умеет tools — веб-поиск с ней не сработает.');
     if (m.free && !c.free) out.push('Модель платная, а отмечена бесплатной.');
     if (m.reasoning && !c.reasoning) out.push('Модель не поддерживает рассуждения — уровень будет проигнорирован.');
+    var ns = hasNativeSearch(m.id);
+    if (m.nativeSearch && ns === false) out.push('У провайдеров модели нет своего поиска — OpenRouter подставит Exa (платно).');
+    if (!m.nativeSearch && ns === true) out.push('У модели есть свой поиск, но он выключен — сейчас ищет Perplexity.');
+    if (m.nativeSearch) {
+      var st = epCache[m.id.trim()];
+      var lack = st && st.state === 'ok' ? st.list.filter(function (e) { return !(e.native_tools && e.native_tools['openrouter:web_search']); }).map(provSlug) : [];
+      if (ns && lack.length) out.push('Без своего поиска: ' + lack.join(', ') + '. Если запрос уйдёт к ним, искать будет Exa.');
+    }
     return out;
   }
   function capWarnHtml(m) {
@@ -806,8 +818,9 @@
     h += '<div class="sect"><div class="sect-t">возможности</div>' +
       '<div class="grid3">' +
         '<label class="sw"><input type="checkbox" data-f="vision"' + (m.vision ? ' checked' : '') + '> Изображения</label>' +
-        '<label class="sw"><input type="checkbox" data-f="supportsTools"' + (m.supportsTools ? ' checked' : '') + '> Веб-поиск <span class="tech">tools</span></label>' +
+        '<label class="sw"><input type="checkbox" data-f="supportsTools"' + (m.supportsTools ? ' checked' : '') + '> Веб-поиск</label>' +
         '<label class="sw"><input type="checkbox" data-f="free"' + (m.free ? ' checked' : '') + '> Бесплатная</label>' +
+        (m._race ? '' : '<label class="sw"><input type="checkbox" data-f="nativeSearch"' + (m.nativeSearch ? ' checked' : '') + '> Свой поиск модели</label>') +
       '</div>' + capWarnHtml(m) +
     '</div>';
 
@@ -836,7 +849,7 @@
     var sel = '<select class="fld" data-f="effortSel">' +
       '<option value=""' + (cur ? '' : ' selected') + '>не отправлять</option>' +
       vals.map(function (v) {
-        return '<option value="' + esc(v) + '"' + (v === cur ? ' selected' : '') + '>' + esc(EFFORT_LABELS[v] ? EFFORT_LABELS[v] + ' — ' + v : v) + '</option>';
+        return '<option value="' + esc(v) + '"' + (v === cur ? ' selected' : '') + '>' + esc(EFFORT_LABELS[v] || v) + '</option>';
       }).join('') +
       '<option value="__custom">другое…</option>' +
     '</select>';
@@ -844,7 +857,7 @@
       fieldHtml('Варианты для пользователя', 'reasoningOptions', '<div class="opt-row">' + vals.map(function (v) {
         var on = m.reasoningOptions.indexOf(v) > -1;
         return '<label class="opt' + (on ? ' on' : '') + '"><input type="checkbox" data-effopt="' + esc(v) + '"' + (on ? ' checked' : '') + '>' +
-          esc(EFFORT_LABELS[v] || v) + (EFFORT_LABELS[v] ? '<span class="tech">' + esc(v) + '</span>' : '') + '</label>';
+          esc(EFFORT_LABELS[v] || v) + '</label>';
       }).join('') + '</div>') +
     '</div>';
     return '<div class="sect"><div class="sect-t">рассуждение</div>' +
@@ -866,7 +879,7 @@
     return null;
   }
   function provSlug(e) {
-    if (e.tag) return String(e.tag).split('/')[0];
+    if (e.tag) return String(e.tag);
     return String(e.provider_name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   }
   function epLive(e) {
@@ -891,6 +904,12 @@
     return out;
   }
 
+  function hasNativeSearch(id) {
+    var st = epCache[String(id || '').trim()];
+    if (!st || st.state !== 'ok') return null;
+    return st.list.some(function (e) { return !!(e.native_tools && e.native_tools['openrouter:web_search']); });
+  }
+
   function loadEndpoints(id) {
     id = String(id || '').trim();
     if (!id) return;
@@ -913,8 +932,31 @@
   }
 
   /* у раскрытых карточек подгружаем провайдеров и здоровье участников гонки */
+  var nsChecked = {};
+  function checkUnsetNative() {
+    models.forEach(function (m) {
+      if (m._race || !m._nsUnset || nsChecked[m._uid] || !catOf(m.id)) return;
+      nsChecked[m._uid] = true;
+      var id = m.id.trim();
+      var apply = function () {
+        var ns = hasNativeSearch(id);
+        if (ns === null) return;
+        m._nsUnset = false;
+        if (!ns) return;
+        m.nativeSearch = true;
+        if ($('list').contains(document.activeElement)) refreshCard(m._uid); else render();
+        toast('У «' + (m.name || id) + '» есть свой поиск — включил его. Сохраните список.', 'ok', 6000);
+      };
+      if (epCache[id] && epCache[id].state === 'ok') apply();
+      else { loadEndpoints(id); var tries = 0; var tm = setInterval(function () {
+        if ((epCache[id] && epCache[id].state !== 'loading') || ++tries > 40) { clearInterval(tm); apply(); }
+      }, 250); }
+    });
+  }
+
   function kickLoads() {
     if (!catalogMap) return;
+    checkUnsetNative();
     models.forEach(function (m) {
       if (!openIds[m._uid]) return;
       if (m._race) m.pool.forEach(function (id) { if (catOf(id)) loadEndpoints(id); });
@@ -929,6 +971,16 @@
       if (!m._race && m.id.trim() === id) {
         var box = card.querySelector('[data-epbox]');
         if (box) box.innerHTML = providerBoxHtml(m);
+        if (m._nsAuto) {
+          m._nsAuto = false;
+          var ns = hasNativeSearch(id);
+          if (ns !== null) {
+            m.nativeSearch = ns;
+            var nsEl = card.querySelector('[data-f="nativeSearch"]');
+            if (nsEl) nsEl.checked = ns;
+          }
+        }
+        refreshCard(m._uid);
       }
       if (m._race && m.pool.indexOf(id) > -1) {
         var pb = card.querySelector('[data-poolbox]');
@@ -942,7 +994,7 @@
       fieldHtml('Порядок провайдеров', 'provider.order', '<div data-epbox>' + providerBoxHtml(m) + '</div>') +
       '<label class="sw" style="margin-top:10px;max-width:360px"><input type="checkbox" data-f="allowFallbacks"' +
         (m.provider && m.provider.allow_fallbacks ? ' checked' : '') + (m.provider ? '' : ' disabled') +
-        '> Разрешить запасных <span class="tech">allow_fallbacks</span></label>' +
+        '> Разрешить запасных</label>' +
     '</div>';
   }
 
@@ -955,18 +1007,10 @@
     if (st.state === 'err') return manual + '<div class="note bad">Провайдеры не загрузились: ' + esc(st.error) + '</div>';
     if (!st.list.length) return manual;
 
-    /* у провайдера бывает несколько вариантов (azure/us, azure/eu) — в очереди он один,
-       показываем его по самому живому варианту */
-    var bySlug = {}, slugs = [];
-    st.list.forEach(function (e) {
-      var sl = provSlug(e);
-      if (!bySlug[sl]) { bySlug[sl] = { best: e, n: 0 }; slugs.push(sl); }
-      bySlug[sl].n++;
-      if (epLive(e).score > epLive(bySlug[sl].best).score) bySlug[sl].best = e;
-    });
+    /* каждый вариант провайдера (azure/us, azure/eu) — своя строка: OpenRouter принимает в order полный тег */
     var known = {};
-    var rows = slugs.map(function (slug) {
-      var e = bySlug[slug].best, variants = bySlug[slug].n;
+    var rows = st.list.map(function (e) {
+      var slug = provSlug(e);
       known[slug] = true;
       var pos = order.indexOf(slug);
       var live = epLive(e);
@@ -974,13 +1018,13 @@
         '<span class="pnum">' + (pos > -1 ? pos + 1 : '') + '</span>' +
         '<span class="live ' + live.cls + '" title="' + esc(live.text) + '"></span>' +
         '<div class="pmain"><b>' + esc(e.provider_name || slug) + '</b> <span class="mid mono">' + esc(slug) +
-          (variants > 1 ? ' · ' + variants + ' вар.' : (e.quantization && e.quantization !== 'unknown' ? ' · ' + esc(e.quantization) : '')) + '</span></div>' +
+          (e.quantization && e.quantization !== 'unknown' ? ' · ' + esc(e.quantization) : '') + '</span></div>' +
         '<div class="pstat">' + epStats(e) + '</div>' +
       '</div>';
     });
     /* в порядке есть провайдер, которого у модели уже нет */
     order.forEach(function (slug, k) {
-      if (known[slug]) return;
+      if (known[slug] || st.list.some(function (e) { return String(e.tag || '').split('/')[0] === slug; })) return;
       rows.push('<div class="prow pick on" data-prov="' + esc(slug) + '">' +
         '<span class="pnum">' + (k + 1) + '</span><span class="live down"></span>' +
         '<div class="pmain"><b>' + esc(slug) + '</b></div>' +
@@ -1105,6 +1149,7 @@
       var c = catOf(m.id);
       if (c && !m._race) {
         m.vision = c.vision; m.supportsTools = c.tools; m.free = c.free;
+        m._nsAuto = true;
         ['vision', 'supportsTools', 'free'].forEach(function (f) {
           var el = card.querySelector('[data-f="' + f + '"]');
           if (el) el.checked = m[f];
@@ -1153,7 +1198,7 @@
       var tv = t.value.trim();
       m.temperature = tv === '' ? null : Number(tv);
     }
-    else if (f === 'vision' || f === 'free' || f === 'supportsTools') m[f] = t.checked;
+    else if (f === 'vision' || f === 'free' || f === 'supportsTools' || f === 'nativeSearch') m[f] = t.checked;
     else if (f === 'icon') { if (!/^https?:/i.test(m.icon)) m.icon = t.value; }
     else if (f === 'iconUrl') {
       var url = t.value.trim();
