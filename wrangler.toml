@@ -1,0 +1,7 @@
+name = "not0ai"
+main = "worker.js"
+compatibility_date = "2026-05-11"
+
+[[kv_namespaces]]
+binding = "MODELS_STORE"
+id = "b3077dc72a4846f1a301a3266687eafa"
