@@ -156,7 +156,7 @@
   /* ---------- нижняя панель ---------- */
   .bar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(19,19,20,.94);
     backdrop-filter:blur(12px);border-top:1px solid var(--bd-soft);padding:12px 18px}
-  .bar .in{max-width:1080px;margin:0 auto;display:flex;justify-content:space-between;
+  .bar .in{max-width:1044px;margin:0 auto;display:flex;justify-content:space-between;
     align-items:center;gap:12px;flex-wrap:wrap}
   .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);flex:0 0 auto}
   .dot.dirty{background:var(--warn);box-shadow:0 0 0 3px rgba(251,191,36,.15)}
@@ -245,6 +245,70 @@
   kbd{background:var(--input);border:1px solid var(--bd);border-bottom-width:2px;border-radius:5px;
     padding:1px 5px;font-size:11px;font-family:ui-monospace,Menlo,monospace;color:var(--mut)}
   .foot{text-align:center;color:var(--mut-dim);font-size:11.5px;margin-top:22px;line-height:2}
+
+  /* ---------- вкладки ---------- */
+  .tabs{display:flex;gap:2px;background:var(--bg-soft);border:1px solid var(--bd-soft);border-radius:999px;padding:3px;margin-left:8px;flex-wrap:wrap}
+  .tab{background:transparent;border:0;color:var(--mut);border-radius:999px;padding:6px 14px;font-size:13px}
+  .tab:hover{color:var(--fg)}
+  .tab.on{background:var(--card-hi);color:var(--fg);box-shadow:inset 0 0 0 1px var(--bd)}
+
+  /* ---------- меню «⋯» ---------- */
+  .menu{position:fixed;z-index:120;min-width:190px;background:var(--card);border:1px solid var(--bd);
+    border-radius:12px;padding:5px;box-shadow:var(--shadow)}
+  .menu button{display:block;width:100%;text-align:left;background:transparent;border:0;color:var(--fg);
+    padding:8px 11px;border-radius:8px;font-size:13px}
+  .menu button:hover{background:var(--input)}
+  .menu button.danger{color:var(--err)}
+  .menu hr{border:0;border-top:1px solid var(--bd-soft);margin:4px 2px}
+
+  /* ---------- подписи полей ---------- */
+  .tech{text-transform:none;letter-spacing:0;font-weight:400;color:var(--mut-dim);
+    font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:10.5px;margin-left:6px}
+  .note{font-size:11.5px;color:var(--mut-dim);margin-top:6px}
+  .note.bad{color:var(--err)}
+  .warn-line{font-size:12px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);
+    border-radius:9px;padding:7px 10px;margin-top:10px}
+
+  /* уровень рассуждения: флажки */
+  .opt-row{display:flex;gap:6px;flex-wrap:wrap}
+  .opt{display:inline-flex;align-items:center;gap:6px;background:var(--input);border:1px solid var(--bd-soft);
+    border-radius:999px;padding:5px 11px;font-size:12px;cursor:pointer;user-select:none}
+  .opt input{margin:0;accent-color:var(--acc)}
+  .opt.on{border-color:rgba(168,199,250,.45);background:var(--acc-dim);color:var(--acc)}
+
+  /* провайдеры и участники гонки */
+  .plist{border:1px solid var(--bd-soft);border-radius:12px;overflow:hidden}
+  .prow{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--bd-soft);font-size:12.5px}
+  .prow:last-child{border-bottom:0}
+  .prow.pick{cursor:pointer}
+  .prow.pick:hover{background:var(--card-hi)}
+  .prow.on{background:var(--acc-dim)}
+  .pnum{width:22px;height:22px;flex:0 0 22px;border-radius:50%;border:1px solid var(--bd);display:flex;
+    align-items:center;justify-content:center;font-size:11px;color:var(--mut)}
+  .prow.on .pnum{background:var(--acc);border-color:var(--acc);color:#0d1116;font-weight:600}
+  .pmain{flex:1;min-width:0}
+  .pmain b{font-weight:500}
+  .pmain .mid{margin-top:0}
+  .pstat{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+  .pstat .chip{font-size:10px;padding:1px 7px}
+  .live{width:9px;height:9px;border-radius:50%;flex:0 0 9px;background:var(--mut-dim)}
+  .live.ok{background:var(--ok)} .live.mid{background:var(--warn)} .live.down{background:var(--err)}
+  .pres{margin-top:6px}
+  .pres .prow{cursor:pointer}
+  .pres .prow:hover{background:var(--card-hi)}
+
+  /* статистика */
+  .st-bar{display:flex;height:9px;border-radius:999px;overflow:hidden;background:var(--bd-soft)}
+  .st-bar i{display:block;height:100%}
+  .st-table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .st-table th{text-align:left;font-weight:500;color:var(--mut);font-size:11px;padding:6px 8px;border-bottom:1px solid var(--bd-soft)}
+  .st-table td{padding:7px 8px;border-bottom:1px solid var(--bd-soft)}
+  .st-table td.n{text-align:right;font-family:ui-monospace,"SF Mono",Menlo,monospace;white-space:nowrap}
+  .st-dev{padding:12px 4px;border-bottom:1px solid var(--bd-soft)}
+  .st-dev:last-child{border-bottom:0}
+  .st-legend{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:11px;color:var(--mut)}
+  .st-legend span{display:inline-flex;align-items:center;gap:5px}
+  .st-legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
 </style>
 </head>
 <body>
@@ -266,7 +330,6 @@
       <input class="fld" id="pwd" type="password" placeholder="••••••" autocomplete="current-password">
       <button class="ico eye" id="eyeBtn" type="button" title="Показать пароль">👁</button>
     </div>
-    <div class="hint">Проверка пароля не изменяет данные в KV.</div>
   </div>
   <button class="btn primary" style="width:100%;justify-content:center" id="loginBtn">Войти</button>
   <div id="loginMsg" style="margin-top:12px;font-size:13px;color:var(--err);min-height:18px"></div>
@@ -276,120 +339,132 @@
 <div id="app" hidden>
   <div class="top">
     <div class="in">
-      <div class="brand"><b>Модели</b><span class="mono" id="baseLabel"></span></div>
+      <div class="brand"><b>not ai</b><span class="mono" id="baseLabel"></span></div>
+      <nav class="tabs" id="tabs">
+        <button class="tab" data-tab="models">Модели</button>
+        <button class="tab" data-tab="keys">Коды</button>
+        <button class="tab" data-tab="dev">Устройства</button>
+        <button class="tab" data-tab="log">Журнал</button>
+        <button class="tab" data-tab="stats">Статистика</button>
+      </nav>
       <div class="spacer"></div>
-      <div class="row">
-        <button class="btn sm" id="catalogBtn">＋ Из каталога OpenRouter</button>
-        <button class="btn sm" id="addBtn">＋ Пустая</button>
-        <button class="btn sm" id="keysBtn">Коды</button>
-        <button class="btn sm" id="devBtn">Устройства</button>
-        <button class="btn sm" id="logBtn">Журнал гостя</button>
-        <button class="btn sm" id="jsonBtn">{ } JSON</button>
-        <button class="btn sm" id="reloadBtn">↻</button>
-        <button class="btn sm ghost" id="logoutBtn">Выйти</button>
-      </div>
+      <button class="btn sm ghost" id="logoutBtn">Выйти</button>
     </div>
   </div>
 
   <div class="wrap">
-    <!-- каталог -->
-    <div class="panel" id="catPanel" hidden>
-      <div class="panel-h">
-        <b>Каталог OpenRouter</b>
-        <span class="chip" id="catCount">—</span>
+
+    <!-- ===== модели ===== -->
+    <div id="modelsView" class="view">
+      <div class="toolbar">
+        <button class="btn sm" id="catalogBtn">＋ Из каталога</button>
+        <button class="btn sm" id="addBtn">＋ Пустая</button>
+        <button class="btn sm" id="raceBtn">＋ Гонка</button>
         <div class="spacer"></div>
-        <label class="sw" style="padding:6px 10px;font-size:12px">
-          <input type="checkbox" id="catDesc"> описания
-        </label>
-        <button class="ico" id="catClose" title="Закрыть">✕</button>
+        <button class="btn sm ghost" id="expandBtn">Развернуть все</button>
+        <button class="btn sm ghost" id="collapseBtn">Свернуть все</button>
+        <button class="ico" id="reloadBtn" title="Перечитать список моделей с сервера. Несохранённые правки пропадут.">↻</button>
+        <button class="ico" id="moreBtn" title="Ещё">⋯</button>
       </div>
-      <input class="fld" id="catSearch" placeholder="Поиск: gemini, gpt, free, deepseek..." spellcheck="false">
-      <div class="cat-list" id="catList"><div class="cat-empty">Загрузка...</div></div>
+
+      <!-- каталог -->
+      <div class="panel" id="catPanel" hidden>
+        <div class="panel-h">
+          <b>Каталог OpenRouter</b>
+          <span class="chip" id="catCount">—</span>
+          <div class="spacer"></div>
+          <label class="sw" style="padding:6px 10px;font-size:12px">
+            <input type="checkbox" id="catDesc"> описания
+          </label>
+          <button class="ico" id="catClose" title="Закрыть">✕</button>
+        </div>
+        <input class="fld" id="catSearch" placeholder="Поиск: gemini, gpt, free, deepseek..." spellcheck="false">
+        <div class="cat-list" id="catList"><div class="cat-empty">Загрузка...</div></div>
+      </div>
+
+      <!-- json -->
+      <div class="panel" id="jsonPanel" hidden>
+        <div class="panel-h">
+          <b>JSON</b>
+          <div class="spacer"></div>
+          <button class="btn sm" id="jsonCopy">Копировать</button>
+          <button class="btn sm" id="jsonExport">Скачать .json</button>
+          <button class="btn sm" id="jsonImport">Загрузить файл</button>
+          <input type="file" id="fileInput" accept=".json,application/json" hidden>
+          <button class="ico" id="jsonClose" title="Закрыть">✕</button>
+        </div>
+        <textarea class="fld" id="jsonArea" rows="16" spellcheck="false"></textarea>
+        <div class="row" style="margin-top:10px">
+          <button class="btn sm" id="jsonApply">Применить в редактор</button>
+        </div>
+      </div>
+
+      <div id="list"></div>
     </div>
 
-    <!-- json -->
-    <div class="panel" id="jsonPanel" hidden>
-      <div class="panel-h">
-        <b>JSON</b>
-        <div class="spacer"></div>
-        <button class="btn sm" id="jsonCopy">Копировать</button>
-        <button class="btn sm" id="jsonExport">Скачать .json</button>
-        <button class="btn sm" id="jsonImport">Загрузить файл</button>
-        <input type="file" id="fileInput" accept=".json,application/json" hidden>
-        <button class="ico" id="jsonClose" title="Закрыть">✕</button>
-      </div>
-      <textarea class="fld" id="jsonArea" rows="16" spellcheck="false"></textarea>
-      <div class="row" style="margin-top:10px">
-        <button class="btn sm" id="jsonApply">Применить в редактор</button>
-        <span class="hint" style="margin:0">Изменения всё равно нужно сохранить кнопкой снизу.</span>
-      </div>
-    </div>
-
-
-
-    <!-- коды доступа -->
-    <div class="panel" id="keysPanel" hidden>
+    <!-- ===== коды доступа ===== -->
+    <div class="panel view" id="keysPanel" hidden>
       <div class="panel-h">
         <b>Коды доступа</b>
         <span class="chip" id="keysCount">—</span>
         <div class="spacer"></div>
         <button class="btn sm" id="keysAdd">＋ Код</button>
         <button class="btn sm primary" id="keysSave">Сохранить коды</button>
-        <button class="ico" id="keysClose" title="Закрыть">✕</button>
       </div>
       <div id="keysList"><div class="cat-empty">Загрузка...</div></div>
     </div>
 
-    <!-- журнал гостевых диалогов -->
-    <div class="panel" id="logPanel" hidden>
-      <div class="panel-h">
-        <b>Журнал гостевого кода</b>
-        <span class="chip" id="logCount">—</span>
-        <div class="spacer"></div>
-        <button class="btn sm" id="logReload">↻</button>
-        <button class="btn sm danger" id="logClear">Очистить</button>
-        <button class="ico" id="logClose" title="Закрыть">✕</button>
-      </div>
-      <div id="logList"><div class="cat-empty">Загрузка...</div></div>
-    </div>
-
-    <!-- устройства -->
-    <div class="panel" id="devPanel" hidden>
+    <!-- ===== устройства ===== -->
+    <div class="panel view" id="devPanel" hidden>
       <div class="panel-h">
         <b>Расход по устройствам</b>
         <span class="chip" id="devCount">—</span>
         <div class="spacer"></div>
         <select class="fld" id="devKey" style="width:auto;min-width:230px"></select>
-        <button class="btn sm" id="devReload">↻</button>
+        <button class="ico" id="devReload" title="Перечитать устройства с сервера">↻</button>
         <button class="btn sm danger" id="devReset">Обнулить</button>
-        <button class="ico" id="devClose" title="Закрыть">✕</button>
       </div>
       <div id="devList"><div class="cat-empty">Загрузка...</div></div>
     </div>
 
-    <!-- панель инструментов -->
-    <div class="toolbar">
-      <button class="btn sm ghost" id="expandBtn">Развернуть все</button>
-      <button class="btn sm ghost" id="collapseBtn">Свернуть все</button>
+    <!-- ===== журнал гостевых диалогов ===== -->
+    <div class="panel view" id="logPanel" hidden>
+      <div class="panel-h">
+        <b>Журнал гостевого кода</b>
+        <span class="chip" id="logCount">—</span>
+        <div class="spacer"></div>
+        <button class="ico" id="logReload" title="Перечитать журнал с сервера">↻</button>
+        <button class="btn sm danger" id="logClear">Очистить</button>
+      </div>
+      <div id="logList"><div class="cat-empty">Загрузка...</div></div>
     </div>
 
-    <div id="list"></div>
+    <!-- ===== статистика ===== -->
+    <div class="panel view" id="statsPanel" hidden>
+      <div class="panel-h">
+        <b>Какие модели используют</b>
+        <div class="spacer"></div>
+        <select class="fld" id="statKey" style="width:auto;min-width:230px"></select>
+        <button class="ico" id="statReload" title="Перечитать статистику с сервера">↻</button>
+      </div>
+      <div id="statBody"><div class="cat-empty">Загрузка...</div></div>
+    </div>
 
   </div>
 
-  <div class="bar">
+  <div class="bar" id="saveBar">
     <div class="in">
       <div class="row">
         <span class="dot" id="dot"></span>
         <span id="stateMsg" style="font-size:12.5px;color:var(--mut)"></span>
       </div>
-      <div class="row">
-        <button class="btn sm danger" id="resetBtn">Сбросить к дефолту</button>
-        <button class="btn primary" id="saveBtn">Сохранить</button>
-      </div>
+      <button class="btn primary" id="saveBtn">Сохранить</button>
     </div>
   </div>
 </div>
+
+<!-- всплывающее меню «⋯» -->
+<div class="menu" id="popMenu" hidden></div>
 
 <script>
 (function () {
@@ -422,6 +497,7 @@
   var query = '';
   var catalog = null;           // список моделей OpenRouter
   var catalogIds = null;        // Set из id каталога
+  var catalogMap = null;        // id -> запись каталога
   var uidSeq = 0;
 
   var $ = function (id) { return document.getElementById(id); };
@@ -469,8 +545,11 @@
   /* ---------- модель ---------- */
   function normalize(m) {
     m = m || {};
+    var pool = Array.isArray(m.pool) ? m.pool.map(String) : [];
     return {
       _uid: 'u' + (++uidSeq),
+      /* гонка — отдельный вид карточки; в KV это просто модель с непустым pool */
+      _race: !!(m._race || pool.length),
       id: String(m.id || ''),
       name: String(m.name || ''),
       description: String(m.description || ''),
@@ -485,7 +564,7 @@
         ? { order: m.provider.order.map(String), allow_fallbacks: m.provider.allow_fallbacks !== false } : null,
       reasoning: (m.reasoning && m.reasoning.effort) ? { effort: String(m.reasoning.effort) } : null,
       reasoningOptions: Array.isArray(m.reasoningOptions) ? m.reasoningOptions.map(String) : [],
-      pool: Array.isArray(m.pool) ? m.pool.map(String) : [],
+      pool: pool,
       raceWindow: (m.raceWindow === undefined || m.raceWindow === null || m.raceWindow === '') ? 1500 : Number(m.raceWindow)
     };
   }
@@ -493,9 +572,9 @@
     return {
       id: m.id, name: m.name, description: m.description, icon: m.icon, color: m.color,
       vision: m.vision, free: m.free, supportsTools: m.supportsTools, maxTokens: m.maxTokens,
-      temperature: m.temperature, provider: m.provider,
+      temperature: m.temperature, provider: m._race ? null : m.provider,
       reasoning: m.reasoning, reasoningOptions: m.reasoningOptions,
-      pool: m.pool, raceWindow: m.raceWindow
+      pool: m._race ? m.pool : [], raceWindow: m.raceWindow
     };
   }
   function payload() { return models.map(clean); }
@@ -503,9 +582,29 @@
   function blankModel() {
     return normalize({ id: '', name: '', description: '', icon: 'gemini', maxTokens: 8192 });
   }
+  function blankRace() {
+    return normalize({ _race: true, id: 'race/', name: '', icon: 'free', free: true, supportsTools: false, vision: false, maxTokens: 4096 });
+  }
   function indexOfUid(uid) {
     for (var i = 0; i < models.length; i++) if (models[i]._uid === uid) return i;
     return -1;
+  }
+  /* такой же расчёт цвета, как на сайте: статистика в админке совпадает по цветам */
+  function autoModelColor(id) {
+    var h = 2166136261, str = String(id);
+    for (var i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619);
+    return 'hsl(' + (Math.abs(h) % 360) + ' 55% 58%)';
+  }
+  /* предел длины ответа по каталогу: у гонки — самый маленький среди участников */
+  function tokenCap(m) {
+    var ids = m._race ? m.pool : [m.id];
+    var cap = 0;
+    ids.forEach(function (id) {
+      var c = catalogMap && catalogMap[id];
+      var v = c ? (c.maxOut || c.ctx || 0) : 0;
+      if (v && (!cap || v < cap)) cap = v;
+    });
+    return cap;
   }
   /* uid пересоздаются при перезаливке моделей — переносим раскрытые карточки по id */
   function openSnapshot() {
@@ -522,23 +621,22 @@
   function errorFor(m, i) {
     if (!m.id.trim()) return 'Не заполнен id модели.';
     if (m.id.indexOf('/') === -1) return 'id должен быть в формате vendor/model.';
+    if (m._race && /\/$/.test(m.id.trim())) return 'Допишите id гонки, например race/fast-free.';
     for (var j = 0; j < models.length; j++) {
       if (j !== i && models[j].id.trim() === m.id.trim()) return 'Дубликат: такой id уже есть в списке.';
     }
     if (m.temperature !== null && (!isFinite(m.temperature) || m.temperature < 0 || m.temperature > 2))
-      return 'temperature должна быть числом от 0 до 2 (или пустой) — иначе воркер её отбросит.';
+      return 'Температура должна быть от 0 до 2 или пустой.';
+    var cap = tokenCap(m);
+    if (cap && m.maxTokens > cap) return 'Макс. длина ответа больше, чем позволяет модель (' + ctxLabel(cap) + ').';
     if (m.reasoning && !EFFORT_RE.test(m.reasoning.effort))
-      return 'effort «' + m.reasoning.effort + '» воркер отбросит: разрешены латиница, цифры, _ и -, до 16 символов.';
-    var badOpt = (m.reasoningOptions || []).filter(function (o) { return !EFFORT_RE.test(o); })[0];
-    if (badOpt) return 'Вариант «' + badOpt + '» воркер отбросит: разрешены латиница, цифры, _ и -, до 16 символов.';
-    if ((m.reasoningOptions || []).length && !m.reasoning)
-      return 'Заданы варианты, но пустой reasoning.effort.';
-    if (m.pool.length === 1) return 'В гонке одна модель — добавьте ещё хотя бы одну или очистите поле.';
-    if (m.pool.length > 8) return 'В гонке не больше 8 моделей — лишние воркер отбросит.';
-    var badPool = m.pool.filter(function (p) { return p.indexOf('/') === -1; })[0];
-    if (badPool) return 'В гонке «' + badPool + '» — нужен id в формате vendor/model.';
-    if (m.pool.indexOf(m.id.trim()) > -1) return 'Гонка не может включать саму себя.';
-    if (!isFinite(m.raceWindow) || m.raceWindow < 0 || m.raceWindow > 10000) return 'Окно выбора — от 0 до 10000 мс.';
+      return 'Уровень рассуждения «' + m.reasoning.effort + '» воркер отбросит: латиница, цифры, _ и -, до 16 символов.';
+    if (m._race) {
+      if (m.pool.length < 2) return 'Добавьте в гонку хотя бы две модели.';
+      if (m.pool.length > 8) return 'В гонке не больше 8 моделей.';
+      if (m.pool.indexOf(m.id.trim()) > -1) return 'Гонка не может включать саму себя.';
+      if (!isFinite(m.raceWindow) || m.raceWindow < 0 || m.raceWindow > 10000) return 'Окно выбора — от 0 до 10000 мс.';
+    }
     return '';
   }
   function allErrors() {
@@ -580,16 +678,21 @@
     });
   }
 
+  var EFFORT_LABELS = { none: 'Выкл.', minimal: 'Мин.', low: 'Низкая', medium: 'Средняя', high: 'Высокая', xhigh: 'Макс.' };
+
+  function shortName(c) { return String(c.name || c.id).replace(/^[^:]+:\s*/, ''); }
+  function catOf(id) { return catalogMap ? catalogMap[String(id || '').trim()] || null : null; }
+
   function badgesHtml(m) {
     var b = '';
-    if (m.pool.length) b += '<span class="chip acc">гонка ×' + m.pool.length + '</span>';
+    if (m._race) b += '<span class="chip acc">гонка ×' + m.pool.length + '</span>';
     if (m.free) b += '<span class="chip ok">free</span>';
     if (m.vision) b += '<span class="chip">vision</span>';
     if (m.supportsTools) b += '<span class="chip">tools</span>';
     if (m.reasoning) b += '<span class="chip acc">' + esc(m.reasoning.effort) + (m.reasoningOptions.length > 1 ? ' ↕' : '') + '</span>';
     if (m.temperature !== null) b += '<span class="chip">t° ' + esc(m.temperature) + '</span>';
-    if (m.provider) b += '<span class="chip">' + esc(m.provider.order.join(',')) + '</span>';
-    if (catalogIds && m.id && !catalogIds[m.id]) b += '<span class="chip warn">нет в каталоге</span>';
+    if (!m._race && m.provider) b += '<span class="chip">' + esc(m.provider.order.join(',')) + '</span>';
+    if (!m._race && catalogIds && m.id && !catalogIds[m.id.trim()]) b += '<span class="chip warn">нет в каталоге</span>';
     return b;
   }
 
@@ -616,12 +719,7 @@
             '<div class="mid mono">' + esc(m.id || '—') + '</div>' +
           '</div>' +
           '<div class="mbadges">' + badgesHtml(m) + '</div>' +
-          '<div class="macts">' +
-            '<button class="ico" data-act="up" title="Выше">↑</button>' +
-            '<button class="ico" data-act="down" title="Ниже">↓</button>' +
-            '<button class="ico" data-act="dup" title="Дублировать">⧉</button>' +
-            '<button class="ico danger" data-act="del" title="Удалить">✕</button>' +
-          '</div>' +
+          '<div class="macts"><button class="ico" data-cardmenu="1" title="Ещё">⋯</button></div>' +
           '<span class="caret">▾</span>' +
         '</div>' +
         (err ? '<div class="merr">' + esc(err) + '</div>' : '') +
@@ -630,88 +728,325 @@
     }).join('');
     refreshState();
     $('jsonArea').value = JSON.stringify(payload(), null, 2);
+    kickLoads();
   }
 
-  function fieldHtml(label, inner, hint) {
-    return '<div><label class="lb">' + label + '</label>' + inner +
-      (hint ? '<div class="hint">' + hint + '</div>' : '') + '</div>';
+  function fieldHtml(label, tech, inner, extra) {
+    return '<div><label class="lb">' + label + (tech ? '<span class="tech">' + tech + '</span>' : '') + '</label>' +
+      inner + (extra || '') + '</div>';
+  }
+
+  /* «макс. 128K» под длиной ответа; красным — если введено больше */
+  function maxNoteHtml(m) {
+    var cap = tokenCap(m);
+    if (!cap) return '<div class="note" data-maxnote></div>';
+    return '<div class="note' + (m.maxTokens > cap ? ' bad' : '') + '" data-maxnote>макс. ' + ctxLabel(cap) + '</div>';
+  }
+
+  /* включено то, чего модель (или участники гонки) не умеет */
+  function capWarnings(m) {
+    var out = [];
+    if (!catalogMap) return out;
+    if (m._race) {
+      var noImg = [], noTools = [];
+      m.pool.forEach(function (id) {
+        var c = catOf(id);
+        if (!c) return;
+        if (m.vision && !c.vision) noImg.push(shortName(c));
+        if (m.supportsTools && !c.tools) noTools.push(shortName(c));
+      });
+      if (noImg.length) out.push('Не принимают картинки: ' + noImg.join(', ') + '. С картинкой они выбывают из гонки.');
+      if (noTools.length) out.push('Не умеют веб-поиск: ' + noTools.join(', ') + '. С поиском они выбывают из гонки.');
+      return out;
+    }
+    var c = catOf(m.id);
+    if (!c) return out;
+    if (m.vision && !c.vision) out.push('Модель не принимает картинки.');
+    if (m.supportsTools && !c.tools) out.push('Модель не умеет tools — веб-поиск с ней не сработает.');
+    if (m.free && !c.free) out.push('Модель платная, а отмечена бесплатной.');
+    if (m.reasoning && !c.reasoning) out.push('Модель не поддерживает рассуждения — уровень будет проигнорирован.');
+    return out;
+  }
+  function capWarnHtml(m) {
+    return '<div data-capwarn>' + capWarnings(m).map(function (w) { return '<div class="warn-line">' + esc(w) + '</div>'; }).join('') + '</div>';
   }
 
   function bodyHtml(m) {
     var isUrlIcon = /^https?:/i.test(m.icon);
-    var opts = m.reasoningOptions || [];
-    return '<div class="sect"><div class="sect-t">основное</div>' +
+    var h = '<div class="sect"><div class="sect-t">основное</div>' +
       '<div class="grid">' +
-        fieldHtml('id модели', '<input class="fld mono" data-f="id" value="' + esc(m.id) + '" placeholder="vendor/model-name" spellcheck="false">') +
-        fieldHtml('Название', '<input class="fld" data-f="name" value="' + esc(m.name) + '" placeholder="Gemini 3.7 Flash">') +
+        fieldHtml(m._race ? 'id гонки' : 'id модели', '',
+          '<input class="fld mono" data-f="id" value="' + esc(m.id) + '" placeholder="' + (m._race ? 'race/fast-free' : 'vendor/model-name') + '" spellcheck="false">') +
+        fieldHtml('Название', '',
+          '<input class="fld" data-f="name" value="' + esc(m.name) + '" placeholder="' + (m._race ? 'Быстрые бесплатные' : 'Gemini 3.7 Flash') + '">') +
       '</div>' +
       '<div style="margin-top:12px">' +
-        fieldHtml('Описание', '<input class="fld" data-f="description" value="' + esc(m.description) + '" placeholder="пусто — на сайте описание не показывается">') +
+        fieldHtml('Описание', '', '<input class="fld" data-f="description" value="' + esc(m.description) + '">') +
       '</div>' +
-      '<div class="grid" style="margin-top:12px">' +
-        fieldHtml('Иконка', '<select class="fld" data-f="icon">' + ICONS.map(function (o) {
+      '<div class="grid3" style="margin-top:12px">' +
+        fieldHtml('Иконка', '', '<select class="fld" data-f="icon">' + ICONS.map(function (o) {
           return '<option value="' + o + '"' + (!isUrlIcon && o === m.icon ? ' selected' : '') + '>' + o + '</option>';
         }).join('') + '</select>') +
-        fieldHtml('Иконка по URL', '<input class="fld mono" data-f="iconUrl" value="' + esc(isUrlIcon ? m.icon : '') + '" placeholder="https://..." spellcheck="false">', 'Приоритетнее выпадающего списка') +
+        fieldHtml('Иконка по ссылке', '', '<input class="fld mono" data-f="iconUrl" value="' + esc(isUrlIcon ? m.icon : '') + '" placeholder="https://..." spellcheck="false">') +
+        fieldHtml('Цвет в статистике', '', '<div class="row" style="flex-wrap:nowrap">' +
+          '<input type="color" class="dev-color" data-f="color" value="' + esc(m.color || '#6b7280') + '">' +
+          '<button class="btn sm ghost" data-colorauto="1"' + (m.color ? '' : ' disabled') + '>Автоматически</button></div>') +
       '</div>' +
-      '<div class="grid" style="margin-top:12px">' +
-        fieldHtml('Цвет в статистике', '<div class="row"><input type="color" class="dev-color" data-f="color" value="' + esc(m.color || '#6b7280') + '">' +
-          '<button class="btn sm ghost" data-colorauto="1">Автоматически</button></div>', m.color ? '' : 'Сейчас цвет подбирается сам') +
-      '</div>' +
-      '<div class="grid" style="margin-top:12px">' +
-        fieldHtml('max_tokens', '<input class="fld mono" type="number" min="256" step="256" data-f="maxTokens" value="' + esc(m.maxTokens) + '">') +
-        fieldHtml('temperature', '<input class="fld mono" type="number" min="0" max="2" step="0.1" data-f="temperature" value="' + (m.temperature === null ? '' : esc(m.temperature)) + '" placeholder="не задана">',
-          'Пусто — параметр не отправляется, модель решает сама. 0–2: ниже — предсказуемее, выше — свободнее.') +
-      '</div>' +
-    '</div>' +
+    '</div>';
 
-    '<div class="sect"><div class="sect-t">гонка моделей</div>' +
-      '<div class="grid">' +
-        fieldHtml('Участники', '<textarea class="fld mono" rows="4" data-f="pool" spellcheck="false" placeholder="по одному id в строке">' + esc(m.pool.join('\n')) + '</textarea>',
-          'Пусто — обычная модель. Если указаны — вопрос уходит сразу всем, отвечает та, что за окно написала больше. id карточки тогда любой, напр. race/fast-free.') +
-        fieldHtml('Окно выбора, мс', '<input class="fld mono" type="number" min="0" max="10000" step="100" data-f="raceWindow" value="' + esc(m.raceWindow) + '">',
-          'Отсчёт с первого слова любой модели. 0 — побеждает первая заговорившая.') +
-      '</div>' +
-      '<div class="row" style="margin-top:8px;gap:6px"><button class="btn sm ghost" data-poolfree="1">＋ бесплатные из каталога</button></div>' +
-    '</div>' +
+    if (m._race) h += raceSectHtml(m);
 
-    '<div class="sect"><div class="sect-t">возможности</div>' +
+    h += '<div class="sect"><div class="sect-t">ответ</div><div class="grid">' +
+        fieldHtml('Макс. длина ответа', 'max_tokens',
+          '<input class="fld mono" type="number" min="256" step="256" data-f="maxTokens" value="' + esc(m.maxTokens) + '">', maxNoteHtml(m)) +
+        fieldHtml('Температура', 'temperature',
+          '<input class="fld mono" type="number" min="0" max="2" step="0.1" data-f="temperature" value="' + (m.temperature === null ? '' : esc(m.temperature)) + '" placeholder="авто">') +
+      '</div></div>';
+
+    h += '<div class="sect"><div class="sect-t">возможности</div>' +
       '<div class="grid3">' +
         '<label class="sw"><input type="checkbox" data-f="vision"' + (m.vision ? ' checked' : '') + '> Изображения</label>' +
-        '<label class="sw"><input type="checkbox" data-f="supportsTools"' + (m.supportsTools ? ' checked' : '') + '> Веб-поиск (tools)</label>' +
+        '<label class="sw"><input type="checkbox" data-f="supportsTools"' + (m.supportsTools ? ' checked' : '') + '> Веб-поиск <span class="tech">tools</span></label>' +
         '<label class="sw"><input type="checkbox" data-f="free"' + (m.free ? ' checked' : '') + '> Бесплатная</label>' +
-      '</div>' +
-    '</div>' +
+      '</div>' + capWarnHtml(m) +
+    '</div>';
 
-    '<div class="sect"><div class="sect-t">рассуждение и провайдер</div>' +
-      '<div class="grid">' +
-        '<div>' +
-          fieldHtml('reasoning.effort (по умолчанию)',
-            '<input class="fld mono" list="effortHints" data-f="effort" value="' + esc(m.reasoning ? m.reasoning.effort : '') + '" placeholder="пусто — без reasoning" spellcheck="false">',
-            'Любое значение, которое понимает модель: medium, xhigh, none...') +
-          '<div style="margin-top:12px">' + fieldHtml('Варианты для пользователя',
-            '<input class="fld mono" data-f="effortOptions" value="' + esc(opts.join(', ')) + '" placeholder="напр. medium, high, xhigh" spellcheck="false">',
-            'Через запятую. Пусто или один вариант — переключатель на сайте не показывается.') + '</div>' +
-          '<div class="row" style="margin-top:8px;gap:6px">' +
-            '<button class="btn sm ghost" data-preset="medium, high">medium / high</button>' +
-            '<button class="btn sm ghost" data-preset="low, medium, high">low / medium / high</button>' +
-            '<button class="btn sm ghost" data-preset="">очистить</button>' +
-          '</div>' +
-        '</div>' +
-        '<div>' +
-          fieldHtml('provider.order', '<input class="fld mono" data-f="providerOrder" value="' + esc(m.provider ? m.provider.order.join(', ') : '') + '" placeholder="decart, deepinfra" spellcheck="false">', 'Пусто — блок provider не отправляется') +
-          '<label class="sw" style="margin-top:10px"><input type="checkbox" data-f="allowFallbacks"' + (m.provider && m.provider.allow_fallbacks ? ' checked' : '') + '> allow_fallbacks</label>' +
-        '</div>' +
-      '</div>' +
-    '</div>' +
+    h += '<div data-reasonbox>' + reasoningSectHtml(m) + '</div>';
+    if (!m._race) h += providerSectHtml(m);
+    h += '<div class="sect"><div class="sect-t">как это увидят на сайте</div>' + previewHtml(m) + '</div>';
+    return h;
+  }
 
-    '<div class="sect"><div class="sect-t">как это увидят на сайте</div>' + previewHtml(m) + '</div>';
+  /* ---------- рассуждение ----------
+     Каталог OpenRouter говорит только «умеет рассуждать или нет», какие уровни
+     принимает конкретная модель — не сообщает. Поэтому список — стандартный
+     набор OpenRouter плюс всё, что уже задано вручную. */
+  function effortValues(m) {
+    var vals = EFFORT_HINTS.slice();
+    (m.reasoningOptions || []).concat(m.reasoning ? [m.reasoning.effort] : []).forEach(function (v) {
+      if (v && vals.indexOf(v) === -1) vals.push(v);
+    });
+    return vals;
+  }
+  function reasoningSectHtml(m) {
+    var c = m._race ? null : catOf(m.id);
+    if (c && !c.reasoning && !m.reasoning) return '';
+    var vals = effortValues(m);
+    var cur = m.reasoning ? m.reasoning.effort : '';
+    var sel = '<select class="fld" data-f="effortSel">' +
+      '<option value=""' + (cur ? '' : ' selected') + '>не отправлять</option>' +
+      vals.map(function (v) {
+        return '<option value="' + esc(v) + '"' + (v === cur ? ' selected' : '') + '>' + esc(EFFORT_LABELS[v] ? EFFORT_LABELS[v] + ' — ' + v : v) + '</option>';
+      }).join('') +
+      '<option value="__custom">другое…</option>' +
+    '</select>';
+    var opts = !m.reasoning ? '' : '<div style="margin-top:12px">' +
+      fieldHtml('Варианты для пользователя', 'reasoningOptions', '<div class="opt-row">' + vals.map(function (v) {
+        var on = m.reasoningOptions.indexOf(v) > -1;
+        return '<label class="opt' + (on ? ' on' : '') + '"><input type="checkbox" data-effopt="' + esc(v) + '"' + (on ? ' checked' : '') + '>' +
+          esc(EFFORT_LABELS[v] || v) + (EFFORT_LABELS[v] ? '<span class="tech">' + esc(v) + '</span>' : '') + '</label>';
+      }).join('') + '</div>') +
+    '</div>';
+    return '<div class="sect"><div class="sect-t">рассуждение</div>' +
+      '<div class="grid">' + fieldHtml('Уровень по умолчанию', 'reasoning.effort', sel) + '<div></div></div>' + opts +
+    '</div>';
+  }
+
+  /* ---------- провайдеры: /api/v1/models/{id}/endpoints ---------- */
+  var epCache = {};             // id -> { state, list, error, notFound, at }
+  var idTimers = {};
+
+  function statNum(v) {
+    if (typeof v === 'number' && isFinite(v)) return v;
+    if (v && typeof v === 'object') {
+      var keys = ['p50', 'median', 'avg', 'mean'];
+      for (var k = 0; k < keys.length; k++) if (typeof v[keys[k]] === 'number') return v[keys[k]];
+      for (var key in v) if (typeof v[key] === 'number') return v[key];
+    }
+    return null;
+  }
+  function provSlug(e) {
+    if (e.tag) return String(e.tag).split('/')[0];
+    return String(e.provider_name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
+  function epLive(e) {
+    if (typeof e.status === 'number' && e.status < 0) return { cls: 'down', text: 'не отвечает', score: 0 };
+    var u = statNum(e.uptime_last_30m);
+    if (u === null) return { cls: 'ok', text: 'доступна', score: 90 };
+    if (u <= 1) u = u * 100;
+    return { cls: u >= 95 ? 'ok' : (u >= 70 ? 'mid' : 'down'), text: 'аптайм ' + Math.round(u) + '%', score: u };
+  }
+  function epStats(e) {
+    var p = e.pricing || {};
+    var inP = perM(p.prompt), outP = perM(p.completion);
+    var out = '';
+    if (inP === 0 && (outP === 0 || outP === null)) out += '<span class="chip ok">бесплатно</span>';
+    else if (inP !== null) out += '<span class="chip">' + money(inP) + ' / ' + (outP !== null ? money(outP) : '—') + '</span>';
+    var lat = statNum(e.latency_last_30m);
+    if (lat !== null) out += '<span class="chip">' + (lat > 50 ? (lat / 1000).toFixed(1) : lat.toFixed(1)) + ' с</span>';
+    var tps = statNum(e.throughput_last_30m);
+    if (tps !== null) out += '<span class="chip">' + Math.round(tps) + ' ток/с</span>';
+    var live = epLive(e);
+    if (live.text !== 'доступна') out += '<span class="chip' + (live.cls === 'ok' ? '' : ' warn') + '">' + esc(live.text) + '</span>';
+    return out;
+  }
+
+  function loadEndpoints(id) {
+    id = String(id || '').trim();
+    if (!id) return;
+    var st = epCache[id];
+    if (st && (st.state === 'loading' || Date.now() - st.at < 300000)) return;
+    epCache[id] = { state: 'loading', list: [], at: Date.now() };
+    api('/api/v1/models/' + id + '/endpoints', { cache: 'no-store' })
+      .then(function (r) {
+        if (r.status === 404) { var nf = new Error('не найдена'); nf.notFound = true; throw nf; }
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (j) {
+        epCache[id] = { state: 'ok', list: (j && j.data && j.data.endpoints) || [], at: Date.now() };
+      })
+      .catch(function (err) {
+        epCache[id] = { state: 'err', list: [], error: err.message, notFound: !!err.notFound, at: Date.now() };
+      })
+      .then(function () { refreshEpViews(id); });
+  }
+
+  /* у раскрытых карточек подгружаем провайдеров и здоровье участников гонки */
+  function kickLoads() {
+    if (!catalogMap) return;
+    models.forEach(function (m) {
+      if (!openIds[m._uid]) return;
+      if (m._race) m.pool.forEach(function (id) { if (catOf(id)) loadEndpoints(id); });
+      else if (catOf(m.id)) loadEndpoints(m.id);
+    });
+  }
+
+  function refreshEpViews(id) {
+    models.forEach(function (m) {
+      var card = document.querySelector('.mcard[data-uid="' + m._uid + '"]');
+      if (!card) return;
+      if (!m._race && m.id.trim() === id) {
+        var box = card.querySelector('[data-epbox]');
+        if (box) box.innerHTML = providerBoxHtml(m);
+      }
+      if (m._race && m.pool.indexOf(id) > -1) {
+        var pb = card.querySelector('[data-poolbox]');
+        if (pb) pb.innerHTML = poolBoxHtml(m);
+      }
+    });
+  }
+
+  function providerSectHtml(m) {
+    return '<div class="sect"><div class="sect-t">провайдеры</div>' +
+      fieldHtml('Порядок провайдеров', 'provider.order', '<div data-epbox>' + providerBoxHtml(m) + '</div>') +
+      '<label class="sw" style="margin-top:10px;max-width:360px"><input type="checkbox" data-f="allowFallbacks"' +
+        (m.provider && m.provider.allow_fallbacks ? ' checked' : '') + (m.provider ? '' : ' disabled') +
+        '> Разрешить запасных <span class="tech">allow_fallbacks</span></label>' +
+    '</div>';
+  }
+
+  function providerBoxHtml(m) {
+    var order = m.provider ? m.provider.order : [];
+    var manual = '<input class="fld mono" data-f="providerOrder" value="' + esc(order.join(', ')) + '" placeholder="deepinfra, together" spellcheck="false">';
+    if (!catOf(m.id)) return manual;
+    var st = epCache[m.id.trim()];
+    if (!st || st.state === 'loading') return '<div class="note">Загружаю провайдеров…</div>';
+    if (st.state === 'err') return manual + '<div class="note bad">Провайдеры не загрузились: ' + esc(st.error) + '</div>';
+    if (!st.list.length) return manual;
+
+    var known = {};
+    var rows = st.list.map(function (e) {
+      var slug = provSlug(e);
+      known[slug] = true;
+      var pos = order.indexOf(slug);
+      var live = epLive(e);
+      return '<div class="prow pick' + (pos > -1 ? ' on' : '') + '" data-prov="' + esc(slug) + '">' +
+        '<span class="pnum">' + (pos > -1 ? pos + 1 : '') + '</span>' +
+        '<span class="live ' + live.cls + '" title="' + esc(live.text) + '"></span>' +
+        '<div class="pmain"><b>' + esc(e.provider_name || slug) + '</b> <span class="mid mono">' + esc(slug) +
+          (e.quantization ? ' · ' + esc(e.quantization) : '') + '</span></div>' +
+        '<div class="pstat">' + epStats(e) + '</div>' +
+      '</div>';
+    });
+    /* в порядке есть провайдер, которого у модели уже нет */
+    order.forEach(function (slug, k) {
+      if (known[slug]) return;
+      rows.push('<div class="prow pick on" data-prov="' + esc(slug) + '">' +
+        '<span class="pnum">' + (k + 1) + '</span><span class="live down"></span>' +
+        '<div class="pmain"><b>' + esc(slug) + '</b></div>' +
+        '<div class="pstat"><span class="chip warn">у модели нет</span></div></div>');
+    });
+    return '<div class="plist">' + rows.join('') + '</div>';
+  }
+
+  /* ---------- гонка ---------- */
+  function raceSectHtml(m) {
+    return '<div class="sect"><div class="sect-t">участники гонки</div>' +
+      '<div data-poolbox>' + poolBoxHtml(m) + '</div>' +
+      '<div class="grid" style="margin-top:10px">' +
+        '<div><input class="fld" data-poolsearch="1" placeholder="Найти в каталоге: llama, qwen, free..." spellcheck="false">' +
+          '<div class="pres" data-poolres></div></div>' +
+        '<div><button class="btn sm ghost" data-poolfree="1">＋ бесплатные из каталога</button></div>' +
+      '</div>' +
+      '<div class="grid" style="margin-top:12px">' +
+        fieldHtml('Окно выбора, мс', 'raceWindow',
+          '<input class="fld mono" type="number" min="0" max="10000" step="100" data-f="raceWindow" value="' + esc(m.raceWindow) + '">') +
+        '<div></div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function poolLive(id) {
+    if (!catalogMap) return { cls: '', text: '' };
+    if (!catOf(id)) return { cls: 'down', text: 'нет в каталоге' };
+    var st = epCache[id];
+    if (!st || st.state === 'loading') return { cls: '', text: 'проверяю…' };
+    if (st.state === 'err') return { cls: 'down', text: st.notFound ? 'не найдена' : 'не проверить' };
+    if (!st.list.length) return { cls: 'down', text: 'нет провайдеров' };
+    var best = null;
+    st.list.forEach(function (e) { var l = epLive(e); if (!best || l.score > best.score) best = l; });
+    return best;
+  }
+
+  function poolBoxHtml(m) {
+    if (!m.pool.length) return '';
+    return '<div class="plist">' + m.pool.map(function (id) {
+      var c = catOf(id);
+      var live = poolLive(id);
+      return '<div class="prow">' +
+        '<span class="live ' + live.cls + '" title="' + esc(live.text) + '"></span>' +
+        '<div class="pmain"><b>' + esc(c ? shortName(c) : id) + '</b><div class="mid mono">' + esc(id) + '</div></div>' +
+        '<div class="pstat">' +
+          (live.text ? '<span class="chip' + (live.cls === 'down' ? ' err' : (live.cls === 'mid' ? ' warn' : '')) + '">' + esc(live.text) + '</span>' : '') +
+          (c ? (c.free ? '<span class="chip ok">бесплатно</span>' : '<span class="chip">' + money(c.price) + ' / ' + money(c.priceOut) + '</span>') : '') +
+        '</div>' +
+        '<button class="ico danger" data-pooldel="' + esc(id) + '" title="Убрать из гонки">✕</button>' +
+      '</div>';
+    }).join('') + '</div>';
+  }
+
+  function renderPoolResults(card, m, q) {
+    var box = card.querySelector('[data-poolres]');
+    if (!box) return;
+    q = String(q || '').trim().toLowerCase();
+    if (!q || !catalog) { box.innerHTML = ''; return; }
+    var found = catalog.filter(function (c) {
+      return c.id.indexOf('openrouter/') !== 0 && m.pool.indexOf(c.id) === -1 &&
+        (c.id + ' ' + c.name).toLowerCase().indexOf(q) > -1;
+    }).sort(function (a, b) { return (b.free - a.free) || (a.id < b.id ? -1 : 1); }).slice(0, 8);
+    box.innerHTML = found.length ? '<div class="plist">' + found.map(function (c) {
+      return '<div class="prow" data-pooladd="' + esc(c.id) + '">' +
+        '<div class="pmain"><b>' + esc(shortName(c)) + '</b><div class="mid mono">' + esc(c.id) + '</div></div>' +
+        '<div class="pstat">' + (c.free ? '<span class="chip ok">бесплатно</span>' : '<span class="chip">' + money(c.price) + ' / ' + money(c.priceOut) + '</span>') +
+          (c.vision ? '<span class="chip">картинки</span>' : '') + (c.tools ? '<span class="chip">tools</span>' : '') + '</div>' +
+      '</div>';
+    }).join('') + '</div>' : '<div class="note">Ничего не найдено</div>';
   }
 
   function previewHtml(m) {
     var opts = m.reasoningOptions || [];
     var showEff = m.reasoning && opts.length > 1;
-    var labels = { none: 'Выкл.', minimal: 'Мин.', low: 'Низкая', medium: 'Средняя', high: 'Высокая', xhigh: 'Макс.' };
     return '<div class="prev">' +
       '<span class="pi">' + iconHtml(m.icon) + '</span>' +
       '<div class="pt">' +
@@ -720,12 +1055,12 @@
       '</div>' +
       '<span class="chk">✓</span>' +
       (showEff ? '<div class="pe' + (opts.length > 3 ? ' wide' : '') + '">' + opts.map(function (o) {
-        return '<span class="' + (m.reasoning.effort === o ? 'on' : '') + '">' + esc(labels[o] || o) + '</span>';
+        return '<span class="' + (m.reasoning.effort === o ? 'on' : '') + '">' + esc(EFFORT_LABELS[o] || o) + '</span>';
       }).join('') + '</div>' : '') +
     '</div>';
   }
 
-  /* точечное обновление шапки карточки, чтобы не терять фокус в полях */
+  /* точечное обновление карточки, чтобы не терять фокус в полях */
   function refreshCard(uid) {
     var card = document.querySelector('.mcard[data-uid="' + uid + '"]');
     if (!card) return;
@@ -745,62 +1080,95 @@
       card.querySelector('.mhead').insertAdjacentElement('afterend', errEl);
     }
     if (errEl) { if (err) errEl.textContent = err; else errEl.remove(); }
-    var prev = card.querySelector('.prev');
-    if (prev) prev.outerHTML = previewHtml(m);
+    var swap = function (sel, html) { var el = card.querySelector(sel); if (el) el.outerHTML = html; };
+    swap('.prev', previewHtml(m));
+    swap('[data-maxnote]', maxNoteHtml(m));
+    swap('[data-capwarn]', capWarnHtml(m));
     $('jsonArea').value = JSON.stringify(payload(), null, 2);
     refreshState();
   }
 
+  /* новый id из каталога: возможности берём оттуда, провайдеров перечитываем */
+  function onIdChanged(card, m) {
+    var uid = m._uid;
+    clearTimeout(idTimers[uid]);
+    idTimers[uid] = setTimeout(function () {
+      var c = catOf(m.id);
+      if (c && !m._race) {
+        m.vision = c.vision; m.supportsTools = c.tools; m.free = c.free;
+        ['vision', 'supportsTools', 'free'].forEach(function (f) {
+          var el = card.querySelector('[data-f="' + f + '"]');
+          if (el) el.checked = m[f];
+        });
+        loadEndpoints(m.id);
+      }
+      var box = card.querySelector('[data-epbox]');
+      if (box) box.innerHTML = providerBoxHtml(m);
+      var rb = card.querySelector('[data-reasonbox]');
+      if (rb) rb.innerHTML = reasoningSectHtml(m);
+      refreshCard(uid);
+    }, 450);
+  }
+
   /* ---------- редактирование полей ---------- */
   document.addEventListener('input', function (e) {
-    var f = e.target.getAttribute && e.target.getAttribute('data-f');
-    if (!f) return;
-    var card = e.target.closest('.mcard');
+    var t = e.target;
+    var card = t.closest && t.closest('.mcard');
     if (!card) return;
-    var m = models[indexOfUid(card.dataset.uid)];
+    var uid = card.dataset.uid;
+    var m = models[indexOfUid(uid)];
     if (!m) return;
 
-    if (f === 'id' || f === 'name' || f === 'description') m[f] = e.target.value;
-    else if (f === 'maxTokens') m.maxTokens = Number(e.target.value) || 8192;
-    else if (f === 'color') m.color = e.target.value;
-    else if (f === 'pool') m.pool = e.target.value.split(/[\s,]+/).map(function (s) { return s.trim(); }).filter(Boolean);
-    else if (f === 'raceWindow') m.raceWindow = e.target.value.trim() === '' ? 1500 : Number(e.target.value);
+    if (t.hasAttribute('data-poolsearch')) { renderPoolResults(card, m, t.value); return; }
+    if (t.hasAttribute('data-effopt')) {
+      m.reasoningOptions = [].slice.call(card.querySelectorAll('[data-effopt]'))
+        .filter(function (x) { return x.checked; })
+        .map(function (x) { return x.getAttribute('data-effopt'); });
+      t.closest('.opt').classList.toggle('on', t.checked);
+      refreshCard(uid);
+      return;
+    }
+
+    var f = t.getAttribute('data-f');
+    if (!f) return;
+    if (f === 'id') { m.id = t.value; onIdChanged(card, m); }
+    else if (f === 'name' || f === 'description') m[f] = t.value;
+    else if (f === 'maxTokens') m.maxTokens = Number(t.value) || 8192;
+    else if (f === 'color') {
+      m.color = t.value;
+      var ca = card.querySelector('[data-colorauto]');
+      if (ca) ca.disabled = false;
+    }
+    else if (f === 'raceWindow') m.raceWindow = t.value.trim() === '' ? 1500 : Number(t.value);
     else if (f === 'temperature') {
-      var tv = e.target.value.trim();
+      var tv = t.value.trim();
       m.temperature = tv === '' ? null : Number(tv);
     }
-    else if (f === 'vision' || f === 'free' || f === 'supportsTools') m[f] = e.target.checked;
-    else if (f === 'icon') { if (!/^https?:/i.test(m.icon)) m.icon = e.target.value; }
+    else if (f === 'vision' || f === 'free' || f === 'supportsTools') m[f] = t.checked;
+    else if (f === 'icon') { if (!/^https?:/i.test(m.icon)) m.icon = t.value; }
     else if (f === 'iconUrl') {
-      var url = e.target.value.trim();
+      var url = t.value.trim();
       m.icon = url ? url : (card.querySelector('[data-f="icon"]') || {}).value || 'gemini';
     }
     else if (f === 'providerOrder') {
-      var order = e.target.value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+      var order = t.value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
       m.provider = order.length ? { order: order, allow_fallbacks: m.provider ? !!m.provider.allow_fallbacks : false } : null;
       var af = card.querySelector('[data-f="allowFallbacks"]');
       if (af) af.disabled = !m.provider;
     }
-    else if (f === 'allowFallbacks') { if (m.provider) m.provider.allow_fallbacks = e.target.checked; }
-    else if (f === 'effort') {
-      var eff = e.target.value.trim();
-      m.reasoning = eff ? { effort: eff } : null;
-      if (!m.reasoning) {
-        m.reasoningOptions = [];
-        var optField = card.querySelector('[data-f="effortOptions"]');
-        if (optField) optField.value = '';
+    else if (f === 'allowFallbacks') { if (m.provider) m.provider.allow_fallbacks = t.checked; }
+    else if (f === 'effortSel') {
+      var v = t.value;
+      if (v === '__custom') {
+        v = (prompt('Значение reasoning.effort (латиница, цифры, _ и -):', '') || '').trim();
+        if (!v) { render(); return; }
       }
+      m.reasoning = v ? { effort: v } : null;
+      if (!m.reasoning) m.reasoningOptions = [];
+      render();
+      return;
     }
-    else if (f === 'effortOptions') {
-      m.reasoningOptions = e.target.value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
-      /* варианты без базового effort не имеют смысла — подставляем первый */
-      if (m.reasoningOptions.length && !m.reasoning) {
-        m.reasoning = { effort: m.reasoningOptions[0] };
-        var effField = card.querySelector('[data-f="effort"]');
-        if (effField) effField.value = m.reasoning.effort;
-      }
-    }
-    refreshCard(card.dataset.uid);
+    refreshCard(uid);
   });
 
   /* ---------- клики по карточкам ---------- */
@@ -809,60 +1177,86 @@
     if (!card) return;
     var uid = card.dataset.uid;
     var i = indexOfUid(uid);
+    var m = models[i];
+    if (!m) return;
 
-    /* подставить в гонку бесплатные модели каталога, умеющие то же, что карточка */
+    var menuBtn = e.target.closest('[data-cardmenu]');
+    if (menuBtn) {
+      openMenu(menuBtn, [
+        { label: 'Дублировать', fn: function () {
+          var copy = normalize(Object.assign(clean(m), { _race: m._race }));
+          models.splice(indexOfUid(uid) + 1, 0, copy);
+          openIds[copy._uid] = true;
+          render();
+        } },
+        { label: 'Удалить', danger: true, fn: function () {
+          if (!confirm('Удалить «' + (m.name || m.id || 'новую модель') + '»?')) return;
+          models.splice(indexOfUid(uid), 1);
+          delete openIds[uid];
+          render();
+        } }
+      ]);
+      return;
+    }
+
+    /* гонка: бесплатные из каталога, добавить найденную, убрать участника */
     if (e.target.closest('[data-poolfree]')) {
-      var pm = models[i];
-      if (!pm) return;
       var fill = function () {
         var free = (catalog || []).filter(function (c) {
-          return c.free && c.id.indexOf('openrouter/') !== 0 && (!pm.vision || c.vision);
+          return c.free && c.id.indexOf('openrouter/') !== 0 && (!m.vision || c.vision);
         }).sort(function (x, y) { return (y.tools - x.tools) || (y.ctx - x.ctx); });
-        var add = free.map(function (c) { return c.id; }).filter(function (id) { return pm.pool.indexOf(id) === -1; });
-        pm.pool = pm.pool.concat(add).slice(0, 8);
+        var add = free.map(function (c) { return c.id; }).filter(function (id) { return m.pool.indexOf(id) === -1; });
+        m.pool = m.pool.concat(add).slice(0, 8);
         render();
         toast(add.length ? 'Добавлено. Оставьте самые толковые — максимум 8.' : 'Новых бесплатных нет', 'ok', 5000);
       };
       if (catalog) fill(); else loadCatalog().then(fill);
       return;
     }
+    var addRow = e.target.closest('[data-pooladd]');
+    if (addRow) {
+      if (m.pool.length >= 8) { toast('В гонке не больше 8 моделей', 'err'); return; }
+      var newId = addRow.getAttribute('data-pooladd');
+      m.pool.push(newId);
+      var search = card.querySelector('[data-poolsearch]');
+      if (search) { search.value = ''; search.focus(); }
+      card.querySelector('[data-poolres]').innerHTML = '';
+      card.querySelector('[data-poolbox]').innerHTML = poolBoxHtml(m);
+      loadEndpoints(newId);
+      refreshCard(uid);
+      return;
+    }
+    var delBtn = e.target.closest('[data-pooldel]');
+    if (delBtn) {
+      var pid = delBtn.getAttribute('data-pooldel');
+      m.pool = m.pool.filter(function (x) { return x !== pid; });
+      card.querySelector('[data-poolbox]').innerHTML = poolBoxHtml(m);
+      refreshCard(uid);
+      return;
+    }
+
+    /* провайдер: клик — добавить в конец очереди или убрать из неё */
+    var prov = e.target.closest('[data-prov]');
+    if (prov) {
+      var slug = prov.getAttribute('data-prov');
+      var order = m.provider ? m.provider.order.slice() : [];
+      var at = order.indexOf(slug);
+      if (at > -1) order.splice(at, 1); else order.push(slug);
+      m.provider = order.length ? { order: order, allow_fallbacks: m.provider ? !!m.provider.allow_fallbacks : false } : null;
+      card.querySelector('[data-epbox]').innerHTML = providerBoxHtml(m);
+      var af = card.querySelector('[data-f="allowFallbacks"]');
+      if (af) { af.disabled = !m.provider; if (!m.provider) af.checked = false; }
+      refreshCard(uid);
+      return;
+    }
 
     /* сброс цвета модели к автоматическому */
     if (e.target.closest('[data-colorauto]')) {
-      var mm = models[i];
-      if (mm) { mm.color = null; render(); }
-      return;
-    }
-
-    /* пресеты набора вариантов */
-    var preset = e.target.closest('[data-preset]');
-    if (preset) {
-      var val = preset.getAttribute('data-preset');
-      var field = card.querySelector('[data-f="effortOptions"]');
-      field.value = val;
-      field.dispatchEvent(new Event('input', { bubbles: true }));
-      return;
-    }
-
-    var actBtn = e.target.closest('[data-act]');
-
-    if (actBtn) {
-      var act = actBtn.getAttribute('data-act');
-      if (act === 'del') {
-        if (!confirm('Удалить «' + (models[i].name || models[i].id || 'новую модель') + '»?')) return;
-        models.splice(i, 1); delete openIds[uid];
-      } else if (act === 'dup') {
-        var copy = normalize(clean(models[i]));
-        models.splice(i + 1, 0, copy);
-        openIds[copy._uid] = true;
-      } else if (act === 'up' && i > 0) {
-        models.splice(i - 1, 0, models.splice(i, 1)[0]);
-      } else if (act === 'down' && i < models.length - 1) {
-        models.splice(i + 1, 0, models.splice(i, 1)[0]);
-      }
+      m.color = null;
       render();
       return;
     }
+
     /* клик по шапке = свернуть/развернуть */
     if (e.target.closest('.mhead')) {
       if (openIds[uid]) delete openIds[uid]; else openIds[uid] = true;
@@ -1035,10 +1429,14 @@
           };
         }).sort(function (a, b) { return a.id < b.id ? -1 : 1; });
         catalogIds = {};
-        catalog.forEach(function (c) { catalogIds[c.id] = true; });
+        catalogMap = {};
+        catalog.forEach(function (c) { catalogIds[c.id] = true; catalogMap[c.id] = c; });
         $('catCount').textContent = catalog.length + ' моделей';
         renderCatalog();
-        render();
+        /* если в карточке сейчас печатают — не перерисовываем её целиком */
+        if ($('list').contains(document.activeElement)) models.forEach(function (m) { refreshCard(m._uid); });
+        else render();
+        kickLoads();
       })
       .catch(function (err) {
         $('catList').innerHTML = '<div class="cat-empty">Не удалось загрузить каталог: ' + esc(err.message) + '</div>';
@@ -1221,7 +1619,7 @@
         '</div>' +
         '<div class="key-foot">' +
           '<label class="sw"><input type="checkbox" data-kf="enabled"' + (k.enabled ? ' checked' : '') + '> работает</label>' +
-          '<label class="sw" title="Этот код сайт сам выдаёт тем, кто пришёл без своего. Их переписка попадает в журнал — на сайте об этом написано."><input type="checkbox" data-kf="guest"' + (k.guest ? ' checked' : '') + '> гостевой</label>' +
+          '<label class="sw" title="Этот код сайт сам выдаёт тем, кто пришёл без своего. Их переписка попадает в журнал."><input type="checkbox" data-kf="guest"' + (k.guest ? ' checked' : '') + '> гостевой</label>' +
           (k.keyId ? '<span class="chip mono" title="Общая группа расхода">группа ' + esc(k.keyId.slice(0, 8)) + '…</span>' : '<span class="chip warn">не сохранён</span>') +
           '<div class="spacer"></div>' +
           '<button class="ico" data-kdel="' + i + '" title="Удалить код">✕</button>' +
@@ -1284,10 +1682,6 @@
     if (inputs.length) inputs[inputs.length - 1].focus();
   });
   $('keysSave').addEventListener('click', saveKeys);
-  $('keysClose').addEventListener('click', function () { $('keysPanel').hidden = true; });
-  $('keysBtn').addEventListener('click', function () {
-    if (togglePanel('keysPanel')) loadKeys();
-  });
 
   /* ---------- расход по устройствам ---------- */
   var DEVICE_PALETTE = ['#4285f4', '#ea4335', '#34a853', '#f9a825', '#a142f4', '#00acc1', '#ff7043', '#8bc34a', '#ec407a', '#5c6bc0'];
@@ -1521,7 +1915,6 @@
 
   $('devKey').addEventListener('change', function () { devKey = $('devKey').value; loadDevices(); });
   $('devReload').addEventListener('click', loadDevGroups);
-  $('devClose').addEventListener('click', function () { $('devPanel').hidden = true; });
   $('devReset').addEventListener('click', function () {
     if (!devKey) return;
     if (!confirm('Обнулить статистику всех устройств этого ключа?')) return;
@@ -1539,12 +1932,8 @@
       })
       .catch(function (err) { toast(err.message, 'err', 6000); });
   });
-  $('devBtn').addEventListener('click', function () {
-    if (togglePanel('devPanel')) loadDevGroups();
-  });
 
-  /* ---------- журнал гостевых диалогов ----------
-     Пишется только для кода с галочкой «гостевой»; на сайте гостю об этом сказано. */
+  /* ---------- журнал гостевых диалогов: только для кода с галочкой «гостевой» ---------- */
   function fmtWhen(ts) {
     if (!ts) return '—';
     var d = new Date(Number(ts));
@@ -1580,8 +1969,6 @@
   }
 
   $('logReload').addEventListener('click', loadLog);
-  $('logClose').addEventListener('click', function () { $('logPanel').hidden = true; });
-  $('logBtn').addEventListener('click', function () { if (togglePanel('logPanel')) loadLog(); });
   $('logClear').addEventListener('click', function () {
     if (!confirm('Стереть весь журнал гостевых диалогов? Это не отменить.')) return;
     api('/api/guestlog/clear', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } })
@@ -1594,11 +1981,161 @@
       .catch(function (err) { toast(err.message, 'err', 6000); });
   });
 
-  /* ---------- панели ---------- */
+  /* ---------- статистика по моделям (настоящие числа) ---------- */
+  var statKey = 'all';
+  function statName(id) {
+    var m = models.filter(function (x) { return x.id === id; })[0];
+    if (m && m.name) return m.name;
+    var c = catOf(id);
+    return c ? shortName(c) : id;
+  }
+  function statColor(id) {
+    var m = models.filter(function (x) { return x.id === id; })[0];
+    return (m && m.color) || autoModelColor(id);
+  }
+  function reqWord(n) { return plural(n, 'запрос', 'запроса', 'запросов'); }
+
+  function loadStats() {
+    $('statBody').innerHTML = '<div class="cat-empty">Загрузка...</div>';
+    var auth = { cache: 'no-store', headers: { 'Authorization': 'Bearer ' + token } };
+    api('/api/usage/keys', auth)
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.j.error || 'Ошибка загрузки');
+        var groups = res.j.groups || [];
+        if (!groups.length) {
+          $('statKey').innerHTML = '';
+          $('statBody').innerHTML = '<div class="cat-empty">Пока никто ничего не спрашивал.</div>';
+          return;
+        }
+        $('statKey').innerHTML = '<option value="all">Все ключи</option>' + groups.map(function (g) {
+          return '<option value="' + esc(g.key) + '">ключ ' + esc(g.key.slice(0, 8)) + '… · ' + g.devices + ' уст.</option>';
+        }).join('');
+        if (statKey !== 'all' && !groups.some(function (g) { return g.key === statKey; })) statKey = 'all';
+        $('statKey').value = statKey;
+        var keys = statKey === 'all' ? groups.map(function (g) { return g.key; }) : [statKey];
+        return Promise.all(keys.map(function (k) {
+          return api('/api/usage?key=' + encodeURIComponent(k), auth)
+            .then(function (r) { return r.json(); })
+            .then(function (j) { return j.devices || []; });
+        })).then(function (lists) { renderStats([].concat.apply([], lists)); });
+      })
+      .catch(function (err) { $('statBody').innerHTML = '<div class="cat-empty">Ошибка: ' + esc(err.message) + '</div>'; });
+  }
+
+  function renderStats(devs) {
+    var totals = {};
+    devs.forEach(function (d) {
+      var src = d.realModels || {};
+      Object.keys(src).forEach(function (id) {
+        var t = totals[id] || { requests: 0, cost: 0 };
+        t.requests += Number(src[id].requests) || 0;
+        t.cost += Number(src[id].cost) || 0;
+        totals[id] = t;
+      });
+    });
+    var ids = Object.keys(totals).filter(function (id) { return totals[id].requests > 0; })
+      .sort(function (a, b) { return totals[b].requests - totals[a].requests; });
+    if (!ids.length) { $('statBody').innerHTML = '<div class="cat-empty">Пока нет данных по моделям.</div>'; return; }
+    var all = ids.reduce(function (s, id) { return s + totals[id].requests; }, 0);
+
+    var table = '<table class="st-table"><thead><tr><th>Модель</th><th style="text-align:right">Запросы</th>' +
+      '<th style="text-align:right">Доля</th><th style="text-align:right">Потрачено</th></tr></thead><tbody>' +
+      ids.map(function (id) {
+        var t = totals[id];
+        return '<tr><td><span class="dev-dot" style="display:inline-block;margin-right:8px;background:' + statColor(id) + '"></span>' +
+          esc(statName(id)) + ' <span class="mid mono" style="display:inline">' + esc(id) + '</span></td>' +
+          '<td class="n">' + t.requests + '</td>' +
+          '<td class="n">' + ((t.requests / all) * 100).toFixed(1) + '%</td>' +
+          '<td class="n">' + fmtMoney(t.cost) + '</td></tr>';
+      }).join('') + '</tbody></table>';
+
+    var people = devs.map(function (d) {
+      var src = d.realModels || {};
+      var list = Object.keys(src).filter(function (id) { return Number(src[id].requests) > 0; })
+        .sort(function (a, b) { return Number(src[b].requests) - Number(src[a].requests); });
+      var tot = list.reduce(function (s, id) { return s + Number(src[id].requests); }, 0);
+      return { d: d, list: list, tot: tot, src: src };
+    }).filter(function (p) { return p.tot > 0; })
+      .sort(function (a, b) { return b.tot - a.tot; });
+
+    var rows = people.map(function (p) {
+      return '<div class="st-dev">' +
+        '<div class="dev-head" style="margin-bottom:7px"><b style="flex:1;font-weight:500">' + esc(p.d.name || p.d.device) + '</b>' +
+          '<span class="mono" style="font-size:12px;color:var(--mut)">' + p.tot + ' ' + reqWord(p.tot) + '</span></div>' +
+        '<div class="st-bar">' + p.list.map(function (id) {
+          var n = Number(p.src[id].requests);
+          return '<i style="width:' + (n / p.tot) * 100 + '%;background:' + statColor(id) + '" title="' + esc(statName(id) + ' — ' + n + ' ' + reqWord(n)) + '"></i>';
+        }).join('') + '</div>' +
+        '<div class="st-legend">' + p.list.slice(0, 8).map(function (id) {
+          return '<span><i style="background:' + statColor(id) + '"></i>' + esc(statName(id)) + ' ' +
+            Math.round((Number(p.src[id].requests) / p.tot) * 100) + '%</span>';
+        }).join('') + '</div>' +
+      '</div>';
+    }).join('');
+
+    $('statBody').innerHTML = table + '<div class="sect"><div class="sect-t">по устройствам</div>' + rows + '</div>';
+  }
+
+  $('statKey').addEventListener('change', function () { statKey = $('statKey').value; loadStats(); });
+  $('statReload').addEventListener('click', loadStats);
+
+  /* ---------- меню «⋯» ---------- */
+  function openMenu(anchor, items) {
+    var el = $('popMenu');
+    el.innerHTML = items.map(function (it, k) {
+      return it.sep ? '<hr>' : '<button data-mi="' + k + '"' + (it.danger ? ' class="danger"' : '') + '>' + esc(it.label) + '</button>';
+    }).join('');
+    el.hidden = false;
+    var r = anchor.getBoundingClientRect();
+    var w = el.offsetWidth, h = el.offsetHeight;
+    var left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8));
+    var top = r.bottom + 6;
+    if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 6);
+    el.style.left = left + 'px';
+    el.style.top = top + 'px';
+    el.onclick = function (ev) {
+      var b = ev.target.closest('[data-mi]');
+      if (!b) return;
+      closeMenu();
+      items[Number(b.getAttribute('data-mi'))].fn();
+    };
+  }
+  function closeMenu() { $('popMenu').hidden = true; }
+  document.addEventListener('click', function (e) {
+    if ($('popMenu').hidden) return;
+    if (e.target.closest('#popMenu') || e.target.closest('[data-cardmenu]') || e.target.closest('#moreBtn')) return;
+    closeMenu();
+  });
+  window.addEventListener('scroll', closeMenu, true);
+  window.addEventListener('resize', closeMenu);
+
+  /* ---------- вкладки ---------- */
+  var TAB_VIEWS = { models: 'modelsView', keys: 'keysPanel', dev: 'devPanel', log: 'logPanel', stats: 'statsPanel' };
+  function showTab(name) {
+    if (!TAB_VIEWS[name]) name = 'models';
+    Object.keys(TAB_VIEWS).forEach(function (k) { $(TAB_VIEWS[k]).hidden = k !== name; });
+    [].forEach.call(document.querySelectorAll('#tabs .tab'), function (b) {
+      b.classList.toggle('on', b.getAttribute('data-tab') === name);
+    });
+    $('saveBar').hidden = name !== 'models';
+    closeMenu();
+    try { localStorage.setItem('admin_tab', name); } catch (e) {}
+    if (name === 'keys') loadKeys();
+    else if (name === 'dev') loadDevGroups();
+    else if (name === 'log') loadLog();
+    else if (name === 'stats') loadStats();
+  }
+  $('tabs').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-tab]');
+    if (b) showTab(b.getAttribute('data-tab'));
+  });
+
+  /* ---------- панели внутри «Моделей» ---------- */
   function togglePanel(id) {
     var p = $(id);
     var wasHidden = p.hidden;
-    $('catPanel').hidden = true; $('jsonPanel').hidden = true; $('devPanel').hidden = true; $('keysPanel').hidden = true; $('logPanel').hidden = true;
+    $('catPanel').hidden = true; $('jsonPanel').hidden = true;
     p.hidden = !wasHidden;
     if (!p.hidden) p.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     return !p.hidden;
@@ -1608,8 +2145,15 @@
     if (togglePanel('catPanel')) { if (!catalog) loadCatalog(); else renderCatalog(); $('catSearch').focus(); }
   });
   $('catClose').addEventListener('click', function () { $('catPanel').hidden = true; });
-  $('jsonBtn').addEventListener('click', function () {
+  function openJson() {
     if (togglePanel('jsonPanel')) $('jsonArea').value = JSON.stringify(payload(), null, 2);
+  }
+  $('moreBtn').addEventListener('click', function () {
+    openMenu($('moreBtn'), [
+      { label: 'JSON: просмотр, импорт, экспорт', fn: openJson },
+      { sep: true },
+      { label: 'Сбросить к дефолту', danger: true, fn: resetDefaults }
+    ]);
   });
   $('jsonClose').addEventListener('click', function () { $('jsonPanel').hidden = true; });
 
@@ -1662,24 +2206,28 @@
     models.forEach(function (m) { openIds[m._uid] = true; }); render();
   });
   $('collapseBtn').addEventListener('click', function () { openIds = {}; render(); });
-  $('addBtn').addEventListener('click', function () {
-    var m = blankModel();
+  function addCard(m) {
     models.push(m); openIds[m._uid] = true;
     query = '';
     render();
     var card = document.querySelector('.mcard[data-uid="' + m._uid + '"]');
-    if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); card.querySelector('[data-f="id"]').focus(); }
-  });
+    if (!card) return;
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    var idField = card.querySelector('[data-f="id"]');
+    idField.focus();
+    idField.setSelectionRange(idField.value.length, idField.value.length);
+  }
+  $('addBtn').addEventListener('click', function () { addCard(blankModel()); });
+  $('raceBtn').addEventListener('click', function () { addCard(blankRace()); });
   $('reloadBtn').addEventListener('click', function () { load(false); });
   $('saveBtn').addEventListener('click', save);
-  $('resetBtn').addEventListener('click', resetDefaults);
 
   document.addEventListener('keydown', function (e) {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
       e.preventDefault();
       if (!$('app').hidden && dirty()) save();
     }
-    if (e.key === 'Escape') { $('catPanel').hidden = true; $('jsonPanel').hidden = true; $('devPanel').hidden = true; $('keysPanel').hidden = true; $('logPanel').hidden = true; }
+    if (e.key === 'Escape') { $('catPanel').hidden = true; $('jsonPanel').hidden = true; closeMenu(); }
   });
 
   /* ---------- вход ---------- */
@@ -1688,6 +2236,11 @@
     $('app').hidden = false;
     $('baseLabel').textContent = base;
     load(true);
+    /* каталог нужен сразу: лимиты, возможности, провайдеры */
+    loadCatalog();
+    var tab = 'models';
+    try { tab = localStorage.getItem('admin_tab') || 'models'; } catch (e) {}
+    showTab(tab);
   }
 
   $('eyeBtn').addEventListener('click', function () {

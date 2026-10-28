@@ -455,7 +455,8 @@
             onFlush: null,
             persist() { saveJSON(PENDING_KEY, this.pending); },
             add(keyHash, cost, requests, modelId) {
-                if (!keyHash || !(cost > 0)) return;
+                cost = Number(cost) || 0;
+                if (!keyHash || !(cost > 0 || requests > 0)) return;
                 this.keyHash = keyHash;
                 this.pending.keyHash = keyHash;
                 this.pending.cost = (this.pending.cost || 0) + cost;
@@ -478,7 +479,7 @@
                 const cost = this.pending.cost || 0;
                 const requests = this.pending.requests || 0;
                 const models = this.pending.models || {};
-                if (!keyHash || !(cost > 0)) return;
+                if (!keyHash || !(cost > 0 || requests > 0)) return;
                 this.pending = { cost: 0, requests: 0, keyHash: null, models: {} };
                 this.persist();
                 try {
@@ -1442,9 +1443,12 @@
                     if (reported) return;
                     reported = true;
                     const spent = mainCost + searchCost;
+                    const waitCost = mainCost === 0 && lastGenId && !model.free;
                     if (spent > 0) usageReporter.add(keyHashRef.current, spent, 1, model.id);
+                    /* бесплатный ответ: денег нет, но запрос в статистику идёт */
+                    else if (!waitCost && fullText) usageReporter.add(keyHashRef.current, 0, 1, model.id);
                     /* стоимость иногда приходит только из /generation — запрос засчитаем там */
-                    if (mainCost === 0 && lastGenId && !model.free) pollCost(lastGenId, currentChatId, modelMsgId, spent > 0 ? 0 : 1, model.id);
+                    if (waitCost) pollCost(lastGenId, currentChatId, modelMsgId, spent > 0 ? 0 : 1, model.id);
                     fetchBalance();
                     /* журнал ведётся только для гостевого кода */
                     if (keyInfo.guest) logGuest(userText, fullText, model.id);
@@ -1511,7 +1515,10 @@
                             }
                         });
                         res = race.res;
-                        if (race.modelId) raceWinner = race.modelId;
+                        if (race.modelId) {
+                            raceWinner = race.modelId;
+                            patch(m => ({ ...m, raceModel: race.modelId }));
+                        }
                     } else {
                         res = await fetch(url, { ...init, body: JSON.stringify(raceWinner ? { ...body, model: raceWinner } : body), signal: controller.signal });
                     }
@@ -1694,7 +1701,28 @@
                 return map;
             }, [models]);
             const modelName = (id) => (modelInfo[id] && modelInfo[id].name) || id;
+            /* участника гонки может не быть в списке сайта — делаем имя из id: meta/llama-5-scout:free -> Llama 5 Scout */
+            const raceLabel = (id) => (modelInfo[id] && modelInfo[id].name) ||
+                String(id).split('/').pop().replace(/:free$/, '').split(/[-_]+/).filter(Boolean)
+                    .map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
             const modelColor = (id) => (modelInfo[id] && modelInfo[id].color) || autoModelColor(id);
+
+            /* для статистики по моделям нужны и устройства, у которых были только бесплатные запросы */
+            const statsDevices = useMemo(() => {
+                const list = (usageDevices || []).filter(d => Number(d.requests) > 0 || Number(d.cost) > 0);
+                const auto = deviceColorMap(list.map(d => d.tag));
+                const fromBar = {};
+                usageBars.segs.forEach(sg => { fromBar[sg.tag] = sg.color; });
+                return list.map(d => ({
+                    tag: d.tag,
+                    name: d.name || ('Устройство ' + String(d.tag).slice(0, 4)),
+                    requests: Number(d.requests) || 0,
+                    models: (d.models && typeof d.models === 'object') ? d.models : {},
+                    color: fromBar[d.tag] || d.color || auto[d.tag],
+                    mine: !!myTag && d.tag === myTag
+                })).sort((a, b) => b.requests - a.requests);
+            }, [usageDevices, usageBars, myTag]);
+            const reqText = (n) => `${n} ${activeLang === 'ru' ? plural(n, 'запрос', 'запроса', 'запросов') : t.deviceRequests}`;
 
             const openBalance = () => { setIsBalanceOpen(true); setStatsOpen(false); fetchBalance(); loadUsage(); };
 
@@ -1850,18 +1878,18 @@
 
                                     {statsOpen && (
                                         <div className="space-y-2.5">
-                                            {usageBars.segs.map(s => {
+                                            {statsDevices.map(s => {
                                                 const entries = Object.entries(s.models || {})
-                                                    .filter(([, v]) => Number(v.cost) > 0)
-                                                    .sort((a, b) => Number(b[1].cost) - Number(a[1].cost));
-                                                const tot = entries.reduce((x, [, v]) => x + Number(v.cost), 0);
+                                                    .filter(([, v]) => Number(v.requests) > 0)
+                                                    .sort((a, b) => Number(b[1].requests) - Number(a[1].requests));
+                                                const tot = entries.reduce((x, [, v]) => x + Number(v.requests), 0);
                                                 return (
                                                     <div key={s.tag} className="p-3 rounded-xl bg-[var(--bg-input)] border border-[var(--border-color)]">
                                                         <div className="flex items-center gap-2 mb-2">
                                                             <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: s.color }}></span>
                                                             <span className="flex-1 min-w-0 truncate font-medium">{s.name}</span>
                                                             {s.mine && <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--cost-bg)] text-[var(--text-secondary)] flex-shrink-0">{t.thisDevice}</span>}
-                                                            <span className="font-mono text-xs text-[var(--text-secondary)] flex-shrink-0">{fmt$(s.cost)}</span>
+                                                            <span className="text-xs text-[var(--text-secondary)] flex-shrink-0">{reqText(s.requests)}</span>
                                                         </div>
                                                         {entries.length === 0 ? (
                                                             <div className="text-xs text-[var(--text-secondary)]">{t.noModelData}</div>
@@ -1869,8 +1897,8 @@
                                                             <>
                                                                 <div className="w-full h-2 rounded-full overflow-hidden flex bg-[var(--border-color)]">
                                                                     {entries.map(([id, v]) => (
-                                                                        <div key={id} style={{ width: `${(Number(v.cost) / tot) * 100}%`, background: modelColor(id) }}
-                                                                            title={`${modelName(id)} — ${fmt$(v.cost)}`}></div>
+                                                                        <div key={id} style={{ width: `${(Number(v.requests) / tot) * 100}%`, background: modelColor(id) }}
+                                                                            title={`${modelName(id)} — ${reqText(Number(v.requests))}`}></div>
                                                                     ))}
                                                                 </div>
                                                                 <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
@@ -1878,7 +1906,7 @@
                                                                         <span key={id} className="flex items-center gap-1.5 text-[10px] text-[var(--text-secondary)]">
                                                                             <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: modelColor(id) }}></span>
                                                                             <span className="truncate max-w-[130px]">{modelName(id)}</span>
-                                                                            <span className="opacity-60 flex-shrink-0">{Math.round((Number(v.cost) / tot) * 100)}%</span>
+                                                                            <span className="opacity-60 flex-shrink-0">{Math.round((Number(v.requests) / tot) * 100)}%</span>
                                                                         </span>
                                                                     ))}
                                                                 </div>
@@ -1887,7 +1915,7 @@
                                                     </div>
                                                 );
                                             })}
-                                            {usageBars.segs.length === 0 && (
+                                            {statsDevices.length === 0 && (
                                                 <div className="text-[var(--text-secondary)] py-6 text-center">{t.noDeviceData}</div>
                                             )}
                                         </div>
@@ -2375,6 +2403,9 @@
                                                         </div>
                                                     )}
                                                     <div className={`flex-1 min-w-0 relative ${msg.isError ? 'text-red-400' : ''}`}>
+                                                        {!safeMode && msg.raceModel && (
+                                                            <div className="text-[11px] leading-none text-[var(--text-secondary)] opacity-70 mt-1 mb-2 truncate">{raceLabel(msg.raceModel)}</div>
+                                                        )}
                                                         {!safeMode && (
                                                             <SearchPanel searches={msg.searches} open={!!msg.searchOpen} t={t}
                                                                 running={(msg.searches || []).some(s => s.status === 'running')}
