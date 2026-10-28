@@ -677,7 +677,7 @@
                 searchLimitNote:'Достигнут лимит поисковых запросов (2).', searchError:'Ошибка поиска',
                 modelsLabel:'Модель', effort:'Глубина рассуждения', effortMedium:'Средняя', effortHigh:'Высокая',
                 effortLabels:{ none:'Выкл.', minimal:'Мин.', low:'Низкая', medium:'Средняя', high:'Высокая', xhigh:'Макс.' },
-                copyText:'Скопировать текст', copied:'Скопировано', viewReasoning:'Посмотреть размышление',
+                copyText:'Скопировать текст', copied:'Скопировано', retry:'Ещё раз', viewReasoning:'Посмотреть размышление',
                 viewCost:'Посмотреть стоимость', reasoningTitle:'Размышление модели', noReasoning:'Модель не вернула reasoning-токены.',
                 searchLog:'Лог поисковых вызовов', noSearches:'Поиск не использовался.',
                 costTitle:'Стоимость ответа', costMain:'Основной ответ', costSearch:'Веб-поиск', costTotal:'Итого',
@@ -714,7 +714,7 @@
                 searchLimitNote:'Grænsen for søgninger er nået (2).', searchError:'Søgefejl',
                 modelsLabel:'Model', effort:'Tænkedybde', effortMedium:'Mellem', effortHigh:'Høj',
                 effortLabels:{ none:'Fra', minimal:'Min.', low:'Lav', medium:'Mellem', high:'Høj', xhigh:'Maks.' },
-                copyText:'Kopier tekst', copied:'Kopieret', viewReasoning:'Se tænkning',
+                copyText:'Kopier tekst', copied:'Kopieret', retry:'Prøv igen', viewReasoning:'Se tænkning',
                 viewCost:'Se pris', reasoningTitle:'Modellens tænkning', noReasoning:'Modellen returnerede ingen reasoning-tokens.',
                 searchLog:'Log over søgekald', noSearches:'Søgning blev ikke brugt.',
                 costTitle:'Svarets pris', costMain:'Hovedsvar', costSearch:'Websøgning', costTotal:'I alt',
@@ -826,16 +826,8 @@
         };
 
         /* ---------- Меню ответа (три точки) ---------- */
-        const MessageActions = ({ msg, t, onReasoning, onCost }) => {
-            const [open, setOpen] = useState(false);
+        const MessageActions = ({ msg, t, onReasoning, onCost, onRetry }) => {
             const [copied, setCopied] = useState(false);
-            const ref = useRef(null);
-            useEffect(() => {
-                if (!open) return;
-                const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-                document.addEventListener('mousedown', h);
-                return () => document.removeEventListener('mousedown', h);
-            }, [open]);
 
             const copy = async () => {
                 const text = msg.text || '';
@@ -846,31 +838,23 @@
                     try { document.execCommand('copy'); } catch(e) {}
                     ta.remove();
                 }
-                setCopied(true); setOpen(false);
+                setCopied(true);
                 setTimeout(() => setCopied(false), 1600);
             };
 
+            const btn = (icon, title, onClick, extra) => (
+                <button onClick={onClick} title={title}
+                    className={`w-7 h-7 flex items-center justify-center rounded-full hover:bg-[var(--hover-bg)] transition-colors ${extra || 'text-[var(--text-secondary)]'}`}>
+                    <Icon name={icon} className="w-4 h-4" />
+                </button>
+            );
+
             return (
-                <div className="mt-2 flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
-                    <div className="relative" ref={ref}>
-                        <button onClick={() => setOpen(!open)} className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-[var(--hover-bg)] text-[var(--text-secondary)] transition-colors" title="•••">
-                            <Icon name="more-horizontal" className="w-4 h-4" />
-                        </button>
-                        {open && (
-                            <div className="absolute left-0 bottom-full mb-2 w-60 bg-[var(--tool-menu-bg)] border border-[var(--border-color)] rounded-xl shadow-2xl p-1.5 z-40 animate-slide-up">
-                                <button onClick={copy} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-sm text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-colors">
-                                    <Icon name="copy" className="w-4 h-4 text-[var(--text-secondary)]" />{t.copyText}
-                                </button>
-                                <button onClick={() => { setOpen(false); onReasoning(); }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-sm text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-colors">
-                                    <Icon name="brain" className="w-4 h-4 text-[var(--text-secondary)]" />{t.viewReasoning}
-                                </button>
-                                <button onClick={() => { setOpen(false); onCost(); }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-sm text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-colors">
-                                    <Icon name="wallet" className="w-4 h-4 text-[var(--text-secondary)]" />{t.viewCost}
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                    {copied && <span className="text-[10px] text-[var(--accent-blue)]">{t.copied}</span>}
+                <div className="mt-2 flex items-center gap-0.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                    {btn(copied ? 'check' : 'copy', copied ? t.copied : t.copyText, copy, copied ? 'text-[var(--accent-blue)]' : '')}
+                    {!msg.isError && msg.reasoning && btn('brain', t.viewReasoning, onReasoning)}
+                    {!msg.isError && btn('wallet', t.viewCost, onCost)}
+                    {onRetry && btn('rotate-ccw', t.retry, onRetry, msg.isError ? 'text-[var(--accent-blue)]' : '')}
                 </div>
             );
         };
@@ -1389,12 +1373,16 @@
             };
 
             /* ---------- ОТПРАВКА СООБЩЕНИЯ ---------- */
-            const sendMessage = async () => {
+            const sendMessage = async (retry) => {
                 /* пока предыдущий ответ не дописан, новую отправку не принимаем */
                 if (isBusyRef.current) return;
+                /* onClick передаёт событие — повтор только по явному объекту */
+                if (!retry || !retry.dropIds) retry = null;
+                const draft = retry ? retry.text : input;
+                const draftAtts = retry ? retry.attachments : attachments;
 
                 /* переключение языка: такой запрос в модель не уходит */
-                const cmd = input.trim().toLowerCase().replace(/[.!?]+$/, '');
+                const cmd = retry ? '' : input.trim().toLowerCase().replace(/[.!?]+$/, '');
                 if (cmd === 'русский язык' || cmd === 'dansk sprog') {
                     const lang = cmd === 'русский язык' ? 'ru' : 'da';
                     setLanguage(lang);
@@ -1403,7 +1391,7 @@
                     return;
                 }
 
-                if (!input.trim() && attachments.length === 0) return;
+                if (!draft.trim() && draftAtts.length === 0) return;
                 const model = currentModel;
 
                 if (!apiKey) {
@@ -1413,11 +1401,13 @@
                 }
 
                 isUserScrolledUp.current = false; lastScrollTopRef.current = 0;
-                const userText = input;
-                const activeAttachments = [...attachments];
-                const isFirstMessage = (activeChat?.messages.length || 0) === 0;
+                const userText = draft;
+                const activeAttachments = [...draftAtts];
+                /* при повторе убранная пара не должна попасть в историю */
+                const priorMessages = (activeChat?.messages || []).filter(m => !(retry && retry.dropIds.includes(m.id)));
+                const isFirstMessage = priorMessages.length === 0;
                 const currentChatId = activeChatId;
-                setInput(''); setAttachments([]);
+                if (!retry) { setInput(''); setAttachments([]); }
 
                 if (activeAttachments.length > 0 && model.vision === false) {
                     setChats(prev => prev.map(c => c.id === currentChatId ? {
@@ -1614,7 +1604,7 @@
                     /* контекст */
                     const convo = [];
                     if (systemInstruction.trim()) convo.push({ role: 'system', content: systemInstruction });
-                    const history = activeChat?.messages.slice(-10) || [];
+                    const history = priorMessages.slice(-10);
                     for (const msg of history) {
                         if (msg.role === 'user') {
                             let content;
@@ -1690,6 +1680,18 @@
                     }
                     finalize();
                 }
+            };
+
+            const retryMessage = (msgId) => {
+                if (isBusyRef.current) return;
+                const list = activeChat?.messages || [];
+                const i = list.findIndex(m => m.id === msgId);
+                const user = i > 0 && list[i - 1].role === 'user' ? list[i - 1] : null;
+                if (!user) return;
+                const dropIds = [user.id, msgId];
+                setChats(prev => prev.map(c => c.id === activeChatId
+                    ? { ...c, messages: c.messages.filter(m => !dropIds.includes(m.id)) } : c));
+                sendMessage({ text: user.text || '', attachments: user.attachments || [], dropIds });
             };
 
             const balancePercentage = useMemo(() => {
@@ -2459,7 +2461,9 @@
                                                         {!safeMode && !msg.isThinking && msg.text && (
                                                             <MessageActions msg={msg} t={t}
                                                                 onReasoning={() => setReasoningModalMsg(msg)}
-                                                                onCost={() => setCostModalMsg(msg)} />
+                                                                onCost={() => setCostModalMsg(msg)}
+                                                                onRetry={!isLoading && !isGenerating && activeChat?.messages[activeChat.messages.length - 1]?.id === msg.id
+                                                                    ? () => retryMessage(msg.id) : null} />
                                                         )}
                                                     </div>
                                                 </div>
