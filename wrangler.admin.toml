@@ -1,0 +1,7 @@
+name = "adminxalithh"
+compatibility_date = "2026-10-28"
+workers_dev = true
+preview_urls = false
+
+[assets]
+directory = "./admin-panel"
