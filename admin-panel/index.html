@@ -955,9 +955,18 @@
     if (st.state === 'err') return manual + '<div class="note bad">Провайдеры не загрузились: ' + esc(st.error) + '</div>';
     if (!st.list.length) return manual;
 
+    /* у провайдера бывает несколько вариантов (azure/us, azure/eu) — в очереди он один,
+       показываем его по самому живому варианту */
+    var bySlug = {}, slugs = [];
+    st.list.forEach(function (e) {
+      var sl = provSlug(e);
+      if (!bySlug[sl]) { bySlug[sl] = { best: e, n: 0 }; slugs.push(sl); }
+      bySlug[sl].n++;
+      if (epLive(e).score > epLive(bySlug[sl].best).score) bySlug[sl].best = e;
+    });
     var known = {};
-    var rows = st.list.map(function (e) {
-      var slug = provSlug(e);
+    var rows = slugs.map(function (slug) {
+      var e = bySlug[slug].best, variants = bySlug[slug].n;
       known[slug] = true;
       var pos = order.indexOf(slug);
       var live = epLive(e);
@@ -965,7 +974,7 @@
         '<span class="pnum">' + (pos > -1 ? pos + 1 : '') + '</span>' +
         '<span class="live ' + live.cls + '" title="' + esc(live.text) + '"></span>' +
         '<div class="pmain"><b>' + esc(e.provider_name || slug) + '</b> <span class="mid mono">' + esc(slug) +
-          (e.quantization ? ' · ' + esc(e.quantization) : '') + '</span></div>' +
+          (variants > 1 ? ' · ' + variants + ' вар.' : (e.quantization && e.quantization !== 'unknown' ? ' · ' + esc(e.quantization) : '')) + '</span></div>' +
         '<div class="pstat">' + epStats(e) + '</div>' +
       '</div>';
     });
