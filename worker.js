@@ -16,7 +16,7 @@
  *  /api/usage/rename  POST -> правка устройства: имя, цвет, показываемые числа (admin)
  *  /api/usage/reset   POST -> обнуление счётчиков (admin)
  *  /api/v1/*          ->  https://openrouter.ai/api/v1/*   (стриминг сохраняется)
- *  всё остальное      ->  https://xalithh322.github.io/not_ai/
+ *  всё остальное      ->  https://xaliithh-netizen.github.io/not_ai/
  *
  * Binding KV: MODELS_STORE
  * Опционально Secret/Var: ADMIN_TOKEN (по умолчанию "1234")
@@ -25,7 +25,7 @@
 const KV_KEY = 'models_list';
 const ADMIN_TOKEN_FALLBACK = '1234';
 const UPSTREAM_ORIGIN = 'https://openrouter.ai';
-const SITE_BASE = 'https://xalithh322.github.io/not_ai';
+const SITE_BASE = 'https://xaliithh-netizen.github.io/not_ai';
 
 /* ---------- Дефолтный список моделей ---------- */
 const DEFAULT_MODELS = [
