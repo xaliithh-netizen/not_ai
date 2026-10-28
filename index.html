@@ -263,6 +263,25 @@
            (рассуждения считаются за полцены). Кто успел дописать ответ целиком
            внутри окна — побеждает сразу. Остальные обрываются; их уже начатые
            генерации уходят в onLoser, чтобы потраченное не потерялось. */
+        const describeError = (e, fallback) => {
+            if (!e || typeof e !== 'object') return fallback;
+            const meta = e.metadata || {};
+            let detail = meta.raw;
+            if (detail && typeof detail !== 'string') detail = JSON.stringify(detail);
+            if (detail) {
+                try {
+                    const j = JSON.parse(detail);
+                    const inner = j.error?.message || j.error || j.message || j.detail;
+                    if (inner) detail = typeof inner === 'string' ? inner : JSON.stringify(inner);
+                } catch {}
+                detail = String(detail).slice(0, 400);
+            }
+            if (!detail && Array.isArray(meta.reasons) && meta.reasons.length) detail = meta.reasons.join(', ');
+            const where = [meta.provider_name, e.code].filter(Boolean).join(', ');
+            const head = e.message || fallback;
+            return head + (where ? ` (${where})` : '') + (detail && detail !== head ? `: ${detail}` : '');
+        };
+
         const raceModels = ({ url, init, body, pool, windowMs, signal, onLoser }) => new Promise((resolve, reject) => {
             const racers = pool.map(id => ({ id, ctrl: new AbortController(), chunks: [], score: 0, said: 0,
                                               genId: null, done: false, failed: false, sink: null, errMsg: '' }));
@@ -343,7 +362,7 @@
                             let d;
                             try { d = JSON.parse(s.slice(6)); } catch { continue; }
                             if (d.id) r.genId = d.id;
-                            if (d.error) r.errMsg = d.error.message || 'error';
+                            if (d.error) r.errMsg = describeError(d.error, 'error');
                             const delta = d.choices?.[0]?.delta;
                             if (!delta) continue;
                             const said = (delta.content || '').length + (Array.isArray(delta.tool_calls) ? JSON.stringify(delta.tool_calls).length : 0);
@@ -1356,7 +1375,7 @@
                 });
                 if (!res.ok) {
                     let m = `HTTP ${res.status}`;
-                    try { const err = await res.json(); m = err.error?.message || m; } catch {}
+                    try { const err = await res.json(); m = describeError(err.error, m); } catch {}
                     throw new Error(m);
                 }
                 const data = await res.json();
@@ -1534,7 +1553,7 @@
                     }
                     if (!res.ok) {
                         let errMsg = t.requestError;
-                        try { const err = await res.json(); errMsg = err.error?.message || errMsg; } catch {}
+                        try { const err = await res.json(); errMsg = describeError(err.error, errMsg); } catch {}
                         throw new Error(errMsg);
                     }
 
@@ -1557,6 +1576,7 @@
                             let data;
                             try { data = JSON.parse(dataStr); } catch { continue; }
 
+                            if (data.error) throw new Error(describeError(data.error, t.requestError));
                             if (data.id) lastGenId = data.id;
                             if (data.usage && data.usage.cost != null) {
                                 mainCost += Number(data.usage.cost) || 0;
