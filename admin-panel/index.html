@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>not ai · admin</title>
+<style>
+  :root{
+    --bg:#131314; --bg-soft:#191a1b; --card:#1e1f20; --card-hi:#232425; --input:#26282a;
+    --bd:#3a3d3f; --bd-soft:#2c2f31; --fg:#e6e6e6; --mut:#9aa0a6; --mut-dim:#6e7479;
+    --acc:#a8c7fa; --acc-dim:rgba(168,199,250,.14);
+    --ok:#4ade80; --warn:#fbbf24; --err:#f87171;
+    --shadow:0 12px 32px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:#3a3d3f;border-radius:6px;border:3px solid var(--bg)}
+  ::-webkit-scrollbar-track{background:transparent}
+  [hidden]{display:none!important}
+  button{font:inherit;cursor:pointer;transition:.15s ease}
+  input,select,textarea{font:inherit}
+
+  /* ---------- базовые контролы ---------- */
+  .btn{background:var(--card-hi);border:1px solid var(--bd);color:var(--fg);border-radius:999px;
+    padding:8px 15px;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+  .btn:hover{border-color:var(--acc);background:#2a2b2d}
+  .btn:active{transform:scale(.97)}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+  .btn.primary{background:var(--acc);color:#0d1116;border-color:var(--acc);font-weight:600}
+  .btn.primary:hover{background:#bcd4fb}
+  .btn.ghost{background:transparent;border-color:transparent;color:var(--mut)}
+  .btn.ghost:hover{background:var(--card-hi);color:var(--fg);border-color:transparent}
+  .btn.danger{color:var(--err);border-color:#4a2a2a;background:rgba(248,113,113,.07)}
+  .btn.danger:hover{border-color:var(--err);background:rgba(248,113,113,.14)}
+  .btn.sm{padding:5px 11px;font-size:12.5px}
+  .ico{width:30px;height:30px;padding:0;justify-content:center;border-radius:9px;
+    background:transparent;border:1px solid transparent;color:var(--mut);font-size:14px;line-height:1}
+  .ico:hover{background:var(--input);border-color:var(--bd);color:var(--fg)}
+  .ico.danger:hover{color:var(--err);border-color:#4a2a2a;background:rgba(248,113,113,.1)}
+
+  .fld{background:var(--input);border:1px solid var(--bd-soft);color:var(--fg);border-radius:10px;
+    padding:9px 12px;width:100%;outline:none;transition:.15s}
+  .fld:focus{border-color:var(--acc);background:#2a2c2e}
+  .fld::placeholder{color:var(--mut-dim)}
+  textarea.fld{resize:vertical;font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12.5px;line-height:1.6}
+  select.fld{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%239aa0a6'><path d='M6 8.5 1.5 4h9z'/></svg>");
+    background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+  label.lb{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;
+    color:var(--mut);margin:0 0 6px;font-weight:600}
+  .hint{font-size:11.5px;color:var(--mut-dim);margin-top:6px;line-height:1.45}
+  .sw{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;
+    background:var(--input);border:1px solid var(--bd-soft);border-radius:10px;padding:10px 12px;font-size:13px}
+  .sw:hover{border-color:var(--bd)}
+  .sw input{appearance:none;width:34px;height:20px;border-radius:999px;background:#4a4d4f;
+    position:relative;flex:0 0 auto;cursor:pointer;transition:.18s;margin:0}
+  .sw input:after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;
+    background:#fff;transition:.18s}
+  .sw input:checked{background:var(--acc)}
+  .sw input:checked:after{left:16px}
+
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .spacer{flex:1}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--mut);
+    background:rgba(255,255,255,.05);border:1px solid var(--bd-soft);border-radius:999px;padding:3px 10px;white-space:nowrap}
+  .chip.acc{color:var(--acc);border-color:rgba(168,199,250,.35);background:var(--acc-dim)}
+  .chip.warn{color:var(--warn);border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.1)}
+  .chip.err{color:var(--err);border-color:rgba(248,113,113,.35);background:rgba(248,113,113,.1)}
+  .chip.ok{color:var(--ok);border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.1)}
+  .mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}
+
+  /* ---------- логин ---------- */
+  .login{max-width:400px;margin:12vh auto;padding:32px;background:var(--card);
+    border:1px solid var(--bd-soft);border-radius:22px;box-shadow:var(--shadow)}
+  .login h1{font-size:19px;margin:0 0 4px;letter-spacing:-.01em}
+  .login .sub{color:var(--mut);font-size:13px;margin:0 0 24px}
+  .pwd-wrap{position:relative}
+  .pwd-wrap .fld{padding-right:44px}
+  .pwd-wrap .eye{position:absolute;right:6px;top:50%;transform:translateY(-50%)}
+
+  /* ---------- каркас ---------- */
+  .top{position:sticky;top:0;z-index:30;background:rgba(19,19,20,.88);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--bd-soft)}
+  .top .in{max-width:1080px;margin:0 auto;padding:14px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .brand{display:flex;align-items:baseline;gap:10px}
+  .brand b{font-size:16px;letter-spacing:-.01em}
+  .brand span{font-size:11.5px;color:var(--mut-dim)}
+  .wrap{max-width:1080px;margin:0 auto;padding:18px 18px 110px}
+
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+  .search{position:relative;flex:1;min-width:200px}
+  .search .fld{padding-left:34px}
+  .search:before{content:'';position:absolute;left:12px;top:50%;width:13px;height:13px;margin-top:-6px;
+    border:1.6px solid var(--mut-dim);border-radius:50%}
+  .search:after{content:'';position:absolute;left:22px;top:50%;width:6px;height:1.6px;margin-top:4px;
+    background:var(--mut-dim);transform:rotate(45deg)}
+
+  /* ---------- карточка модели ---------- */
+  .mcard{background:var(--card);border:1px solid var(--bd-soft);border-radius:14px;margin-bottom:10px;
+    transition:border-color .15s, box-shadow .15s}
+  .mcard:hover{border-color:var(--bd)}
+  .mcard.open{border-color:var(--bd);box-shadow:var(--shadow)}
+  .mcard.bad{border-color:rgba(248,113,113,.45)}
+  .mcard.dragging{opacity:.35}
+  .mcard.drop-before{box-shadow:0 -2px 0 0 var(--acc)}
+  .mcard.drop-after{box-shadow:0 2px 0 0 var(--acc)}
+
+  .mhead{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;user-select:none}
+  .grip{color:var(--mut-dim);cursor:grab;font-size:15px;line-height:1;letter-spacing:-2px;padding:2px 2px 2px 0;flex:0 0 auto}
+  .grip:active{cursor:grabbing}
+  .micon{width:26px;height:26px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+    background:var(--input);border-radius:8px;overflow:hidden}
+  .micon img{width:17px;height:17px;object-fit:contain}
+  .micon svg{width:17px;height:17px;color:#10a37f}
+  .mtitle{flex:1;min-width:0}
+  .mname{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mname.empty{color:var(--mut-dim);font-weight:400;font-style:italic}
+  .mid{font-size:11.5px;color:var(--mut-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+  .mbadges{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;max-width:44%}
+  .mbadges .chip{font-size:10px;padding:2px 8px}
+  .macts{display:flex;gap:2px;flex:0 0 auto}
+  .caret{color:var(--mut-dim);font-size:11px;transition:transform .18s;flex:0 0 auto;width:14px;text-align:center}
+  .mcard.open .caret{transform:rotate(180deg)}
+  .merr{margin:0 14px 12px;padding:8px 11px;border-radius:9px;background:rgba(248,113,113,.09);
+    border:1px solid rgba(248,113,113,.28);color:#fca5a5;font-size:12px}
+
+  .mbody{padding:4px 14px 16px;border-top:1px solid var(--bd-soft);margin-top:2px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .sect{margin-top:16px}
+  .sect-t{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--mut-dim);
+    font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .sect-t:after{content:'';flex:1;height:1px;background:var(--bd-soft)}
+  @media(max-width:780px){.grid,.grid3{grid-template-columns:1fr}.mbadges{display:none}}
+
+  /* превью строки в чате */
+  .prev{background:#28292a;border:1px solid var(--bd-soft);border-radius:12px;padding:10px;
+    display:flex;align-items:center;gap:12px}
+  .prev .pi{width:20px;height:20px;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+  .prev .pi img{width:20px;height:20px;object-fit:contain}
+  .prev .pi svg{width:20px;height:20px;color:#10a37f}
+  .prev .pt{flex:1;min-width:0}
+  .prev .pn{font-size:13.5px;font-weight:500}
+  .prev .pd{font-size:12px;color:var(--mut);margin-top:3px;line-height:1.35}
+  .prev .pe{display:flex;flex-direction:column;gap:2px;background:#1e1f20;border:1px solid var(--bd-soft);
+    border-radius:9px;padding:3px;flex:0 0 auto}
+  .prev .pe.wide{display:grid;grid-template-columns:1fr 1fr}
+  .prev .pe span{font-size:11px;padding:3px 9px;border-radius:6px;color:var(--mut);white-space:nowrap}
+  .prev .pe span.on{background:#131314;color:var(--fg);font-weight:500}
+  .prev .chk{color:var(--acc);font-size:13px;flex:0 0 auto}
+
+  /* ---------- нижняя панель ---------- */
+  .bar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(19,19,20,.94);
+    backdrop-filter:blur(12px);border-top:1px solid var(--bd-soft);padding:12px 18px}
+  .bar .in{max-width:1080px;margin:0 auto;display:flex;justify-content:space-between;
+    align-items:center;gap:12px;flex-wrap:wrap}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);flex:0 0 auto}
+  .dot.dirty{background:var(--warn);box-shadow:0 0 0 3px rgba(251,191,36,.15)}
+
+  /* ---------- панели (JSON / каталог) ---------- */
+  .panel{background:var(--card);border:1px solid var(--bd-soft);border-radius:16px;
+    padding:16px;margin-bottom:16px;box-shadow:var(--shadow)}
+  .panel-h{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .panel-h b{font-size:14px}
+
+  .cat-list{max-height:min(52vh,520px);overflow-y:auto;margin-top:12px;
+    border:1px solid var(--bd-soft);border-radius:12px}
+/* раскрытая карточка каталога */
+  .cat-top{display:flex;align-items:center;gap:12px;width:100%}
+  .cat-row{display:block;padding:11px 13px;border-bottom:1px solid var(--bd-soft)}
+  .cat-row.open{background:var(--card-hi)}
+  .cat-main{cursor:pointer}
+  .cat-arw{margin-left:7px;font-size:10px;color:var(--mut)}
+  .cat-det{margin-top:12px;padding:12px 13px;border:1px solid var(--bd-soft);border-radius:10px;background:var(--bg)}
+  .cat-desc{font-size:12px;color:var(--mut);line-height:1.55;margin-bottom:12px;white-space:pre-wrap}
+  .cat-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:720px){.cat-cols{grid-template-columns:1fr}}
+  .cat-st{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:7px}
+  .kv{display:flex;justify-content:space-between;gap:12px;font-size:12px;padding:3px 0;border-bottom:1px dashed var(--bd-soft)}
+  .kv:last-child{border-bottom:none}
+  .kv span{color:var(--mut)}
+
+/* коды доступа */
+  .key-row{padding:12px 4px;border-bottom:1px solid var(--bd-soft)}
+  .key-row:last-child{border-bottom:none}
+  .key-grid{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:12px}
+  @media(max-width:760px){.key-grid{grid-template-columns:1fr}}
+  .key-foot{display:flex;align-items:center;gap:10px;margin-top:10px}
+
+  /* устройства */
+  .dev-bar{display:flex;height:10px;border-radius:999px;overflow:hidden;background:var(--bd-soft);margin:4px 0 16px}
+  .dev-bar i{display:block;height:100%}
+  .dev-row{padding:12px 4px;border-bottom:1px solid var(--bd-soft)}
+  .dev-head{display:flex;align-items:center;gap:10px}
+  .dev-color{width:30px;height:30px;flex:0 0 30px;padding:0;border:1px solid var(--bd);border-radius:8px;
+    background:none;cursor:pointer}
+  .dev-color::-webkit-color-swatch-wrapper{padding:2px}
+  .dev-color::-webkit-color-swatch{border:none;border-radius:6px}
+  .dev-edit{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:9px}
+  @media(max-width:700px){.dev-edit{grid-template-columns:1fr}}
+  .dev-edit label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--mut);margin-bottom:4px}
+  .dev-edit .fld{padding:6px 9px;font-size:12px}
+  .dev-real{padding:6px 9px;font-size:12px;color:var(--mut);border:1px dashed var(--bd-soft);border-radius:8px}
+  .dev-dot{width:10px;height:10px;border-radius:50%;flex:0 0 10px}
+  .dev-main{flex:1;min-width:0}
+  .dev-name{padding:6px 9px;font-size:13px}
+  .dev-sub{font-size:11px;color:var(--mut);margin-top:4px}
+  .dev-num{text-align:right;flex:0 0 auto;display:flex;flex-direction:column;gap:2px}
+  .dev-num b{font-size:13px}
+  .dev-num span{font-size:11px;color:var(--mut)}
+  .cat-row:last-child{border-bottom:none}
+  .cat-row:hover{background:var(--card-hi)}
+  .cat-main{flex:1;min-width:0}
+  .cat-n{font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cat-i{font-size:11px;color:var(--mut-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cat-meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+  .cat-meta .chip{font-size:10px;padding:1px 7px}
+  .cat-empty{padding:26px;text-align:center;color:var(--mut-dim);font-size:13px}
+
+  .log-row{padding:12px 14px;border-bottom:1px solid var(--bd)}
+  .log-row:last-child{border-bottom:0}
+  .log-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .log-q,.log-a{font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word;
+    border-radius:10px;padding:8px 11px}
+  .log-q{background:var(--acc-dim);color:var(--fg)}
+  .log-a{background:var(--input);color:var(--mut);margin-top:6px}
+
+  /* ---------- тосты ---------- */
+  .toasts{position:fixed;top:14px;right:14px;z-index:200;display:flex;flex-direction:column;gap:8px;
+    max-width:min(380px,calc(100vw - 28px))}
+  .toast{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:11px 14px;
+    font-size:13px;box-shadow:var(--shadow);display:flex;gap:10px;align-items:flex-start;
+    animation:slideIn .22s ease-out}
+  .toast.ok{border-color:rgba(74,222,128,.4)}
+  .toast.err{border-color:rgba(248,113,113,.45)}
+  .toast .tb{width:3px;align-self:stretch;border-radius:2px;background:var(--mut);flex:0 0 auto}
+  .toast.ok .tb{background:var(--ok)} .toast.err .tb{background:var(--err)}
+  @keyframes slideIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+
+  kbd{background:var(--input);border:1px solid var(--bd);border-bottom-width:2px;border-radius:5px;
+    padding:1px 5px;font-size:11px;font-family:ui-monospace,Menlo,monospace;color:var(--mut)}
+  .foot{text-align:center;color:var(--mut-dim);font-size:11.5px;margin-top:22px;line-height:2}
+</style>
+</head>
+<body>
+
+<div class="toasts" id="toasts"></div>
+<datalist id="effortHints"></datalist>
+
+<!-- ================= ЛОГИН ================= -->
+<div class="login" id="login">
+  <h1>not ai · admin</h1>
+  <p class="sub">Список моделей в Cloudflare KV</p>
+  <div style="margin-bottom:14px">
+    <label class="lb">API base</label>
+    <input class="fld mono" id="apiBase" placeholder="https://ai.vixle.top" spellcheck="false">
+  </div>
+  <div style="margin-bottom:20px">
+    <label class="lb">Пароль</label>
+    <div class="pwd-wrap">
+      <input class="fld" id="pwd" type="password" placeholder="••••••" autocomplete="current-password">
+      <button class="ico eye" id="eyeBtn" type="button" title="Показать пароль">👁</button>
+    </div>
+    <div class="hint">Проверка пароля не изменяет данные в KV.</div>
+  </div>
+  <button class="btn primary" style="width:100%;justify-content:center" id="loginBtn">Войти</button>
+  <div id="loginMsg" style="margin-top:12px;font-size:13px;color:var(--err);min-height:18px"></div>
+</div>
+
+<!-- ================= ПРИЛОЖЕНИЕ ================= -->
+<div id="app" hidden>
+  <div class="top">
+    <div class="in">
+      <div class="brand"><b>Модели</b><span class="mono" id="baseLabel"></span></div>
+      <div class="spacer"></div>
+      <div class="row">
+        <button class="btn sm" id="catalogBtn">＋ Из каталога OpenRouter</button>
+        <button class="btn sm" id="addBtn">＋ Пустая</button>
+        <button class="btn sm" id="keysBtn">Коды</button>
+        <button class="btn sm" id="devBtn">Устройства</button>
+        <button class="btn sm" id="logBtn">Журнал гостя</button>
+        <button class="btn sm" id="jsonBtn">{ } JSON</button>
+        <button class="btn sm" id="reloadBtn">↻</button>
+        <button class="btn sm ghost" id="logoutBtn">Выйти</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- каталог -->
+    <div class="panel" id="catPanel" hidden>
+      <div class="panel-h">
+        <b>Каталог OpenRouter</b>
+        <span class="chip" id="catCount">—</span>
+        <div class="spacer"></div>
+        <label class="sw" style="padding:6px 10px;font-size:12px">
+          <input type="checkbox" id="catDesc"> описания
+        </label>
+        <button class="ico" id="catClose" title="Закрыть">✕</button>
+      </div>
+      <input class="fld" id="catSearch" placeholder="Поиск: gemini, gpt, free, deepseek..." spellcheck="false">
+      <div class="cat-list" id="catList"><div class="cat-empty">Загрузка...</div></div>
+    </div>
+
+    <!-- json -->
+    <div class="panel" id="jsonPanel" hidden>
+      <div class="panel-h">
+        <b>JSON</b>
+        <div class="spacer"></div>
+        <button class="btn sm" id="jsonCopy">Копировать</button>
+        <button class="btn sm" id="jsonExport">Скачать .json</button>
+        <button class="btn sm" id="jsonImport">Загрузить файл</button>
+        <input type="file" id="fileInput" accept=".json,application/json" hidden>
+        <button class="ico" id="jsonClose" title="Закрыть">✕</button>
+      </div>
+      <textarea class="fld" id="jsonArea" rows="16" spellcheck="false"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn sm" id="jsonApply">Применить в редактор</button>
+        <span class="hint" style="margin:0">Изменения всё равно нужно сохранить кнопкой снизу.</span>
+      </div>
+    </div>
+
+
+
+    <!-- коды доступа -->
+    <div class="panel" id="keysPanel" hidden>
+      <div class="panel-h">
+        <b>Коды доступа</b>
+        <span class="chip" id="keysCount">—</span>
+        <div class="spacer"></div>
+        <button class="btn sm" id="keysAdd">＋ Код</button>
+        <button class="btn sm primary" id="keysSave">Сохранить коды</button>
+        <button class="ico" id="keysClose" title="Закрыть">✕</button>
+      </div>
+      <div id="keysList"><div class="cat-empty">Загрузка...</div></div>
+    </div>
+
+    <!-- журнал гостевых диалогов -->
+    <div class="panel" id="logPanel" hidden>
+      <div class="panel-h">
+        <b>Журнал гостевого кода</b>
+        <span class="chip" id="logCount">—</span>
+        <div class="spacer"></div>
+        <button class="btn sm" id="logReload">↻</button>
+        <button class="btn sm danger" id="logClear">Очистить</button>
+        <button class="ico" id="logClose" title="Закрыть">✕</button>
+      </div>
+      <div id="logList"><div class="cat-empty">Загрузка...</div></div>
+    </div>
+
+    <!-- устройства -->
+    <div class="panel" id="devPanel" hidden>
+      <div class="panel-h">
+        <b>Расход по устройствам</b>
+        <span class="chip" id="devCount">—</span>
+        <div class="spacer"></div>
+        <select class="fld" id="devKey" style="width:auto;min-width:230px"></select>
+        <button class="btn sm" id="devReload">↻</button>
+        <button class="btn sm danger" id="devReset">Обнулить</button>
+        <button class="ico" id="devClose" title="Закрыть">✕</button>
+      </div>
+      <div id="devList"><div class="cat-empty">Загрузка...</div></div>
+    </div>
+
+    <!-- панель инструментов -->
+    <div class="toolbar">
+      <button class="btn sm ghost" id="expandBtn">Развернуть все</button>
+      <button class="btn sm ghost" id="collapseBtn">Свернуть все</button>
+    </div>
+
+    <div id="list"></div>
+
+  </div>
+
+  <div class="bar">
+    <div class="in">
+      <div class="row">
+        <span class="dot" id="dot"></span>
+        <span id="stateMsg" style="font-size:12.5px;color:var(--mut)"></span>
+      </div>
+      <div class="row">
+        <button class="btn sm danger" id="resetBtn">Сбросить к дефолту</button>
+        <button class="btn primary" id="saveBtn">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var DEFAULT_BASE = 'https://ai.vixle.top';
+  var ICONS = ['gemini', 'chatgpt', 'deepseek', 'gemma', 'meta', 'free', 'router', 'perplexity'];
+  /* подсказки, а не ограничение: воркер принимает любое значение вида [a-z][a-z0-9_-]{0,15} */
+  var EFFORT_HINTS = ['none', 'minimal', 'low', 'medium', 'high', 'xhigh'];
+  var EFFORT_RE = /^[a-z][a-z0-9_-]{0,15}$/i;
+
+  /* те же картинки, что и на сайте — превью совпадает с реальным видом */
+  var ICON_SRC = {
+    gemini: 'https://www.gstatic.com/lamda/images/gemini_sparkle_aurora_33f86dc0c0257da337c63.svg',
+    deepseek: 'https://i.ibb.co/vCC9PQ7S/image.png',
+    gemma: 'https://i.ibb.co/G4Zdnf7Y/image.png',
+    meta: 'https://i.ibb.co/Q7fB6grM/image.png',
+    free: 'https://i.ibb.co/3Yv1xq1K/image.png',
+    perplexity: 'https://i.ibb.co/3Yv1xq1K/image.png',
+    router: 'https://i.ibb.co/kssPJfdp/image.png'
+  };
+  var CHATGPT_SVG = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.073zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.5 2.6002 1.5v3.0043l-2.5998 1.5-2.6024-1.5z"/></svg>';
+
+  /* ---------- состояние ---------- */
+  var base = localStorage.getItem('admin_api_base') || DEFAULT_BASE;
+  var token = sessionStorage.getItem('admin_token') || '';
+  var models = [];
+  var snapshot = '[]';          // последнее сохранённое состояние
+  var openIds = {};             // раскрытые карточки: uid -> true
+  var query = '';
+  var catalog = null;           // список моделей OpenRouter
+  var catalogIds = null;        // Set из id каталога
+  var uidSeq = 0;
+
+  var $ = function (id) { return document.getElementById(id); };
+  $('apiBase').value = base;
+  $('effortHints').innerHTML = EFFORT_HINTS.map(function (o) { return '<option value="' + o + '">'; }).join('');
+
+  /* ---------- утилиты ---------- */
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function apiUrl(p) { return base.replace(/\/+$/, '') + p; }
+  function api(p, opts) { return fetch(apiUrl(p), opts); }
+
+  function toast(text, kind, ms) {
+    var el = document.createElement('div');
+    el.className = 'toast' + (kind ? ' ' + kind : '');
+    el.innerHTML = '<span class="tb"></span><span>' + esc(text) + '</span>';
+    $('toasts').appendChild(el);
+    setTimeout(function () {
+      el.style.transition = 'opacity .2s'; el.style.opacity = '0';
+      setTimeout(function () { el.remove(); }, 220);
+    }, ms || 3800);
+  }
+
+  function iconHtml(icon) {
+    if (/^https?:/i.test(icon)) return '<img src="' + esc(icon) + '" alt="">';
+    if (icon === 'chatgpt') return CHATGPT_SVG;
+    return '<img src="' + esc(ICON_SRC[icon] || ICON_SRC.gemini) + '" alt="">';
+  }
+
+  function guessIcon(id) {
+    var s = String(id).toLowerCase();
+    if (s.indexOf('gemma') > -1) return 'gemma';
+    if (s.indexOf('gemini') > -1 || s.indexOf('google/') === 0) return 'gemini';
+    if (s.indexOf('openai/') === 0 || s.indexOf('gpt') > -1) return 'chatgpt';
+    if (s.indexOf('deepseek') > -1) return 'deepseek';
+    if (s.indexOf('meta') > -1 || s.indexOf('llama') > -1) return 'meta';
+    if (s.indexOf('perplexity') > -1 || s.indexOf('sonar') > -1) return 'perplexity';
+    if (s.indexOf(':free') > -1) return 'free';
+    return 'gemini';
+  }
+
+  /* ---------- модель ---------- */
+  function normalize(m) {
+    m = m || {};
+    return {
+      _uid: 'u' + (++uidSeq),
+      id: String(m.id || ''),
+      name: String(m.name || ''),
+      description: String(m.description || ''),
+      icon: String(m.icon || 'gemini'),
+      color: /^#[0-9a-f]{6}$/i.test(String(m.color || '')) ? String(m.color).toLowerCase() : null,
+      vision: m.vision !== false,
+      free: !!m.free,
+      supportsTools: m.supportsTools !== false,
+      maxTokens: Number(m.maxTokens) > 0 ? Number(m.maxTokens) : 8192,
+      temperature: (m.temperature === null || m.temperature === undefined || m.temperature === '') ? null : Number(m.temperature),
+      provider: (m.provider && Array.isArray(m.provider.order) && m.provider.order.length)
+        ? { order: m.provider.order.map(String), allow_fallbacks: m.provider.allow_fallbacks !== false } : null,
+      reasoning: (m.reasoning && m.reasoning.effort) ? { effort: String(m.reasoning.effort) } : null,
+      reasoningOptions: Array.isArray(m.reasoningOptions) ? m.reasoningOptions.map(String) : [],
+      pool: Array.isArray(m.pool) ? m.pool.map(String) : [],
+      raceWindow: (m.raceWindow === undefined || m.raceWindow === null || m.raceWindow === '') ? 1500 : Number(m.raceWindow)
+    };
+  }
+  function clean(m) {
+    return {
+      id: m.id, name: m.name, description: m.description, icon: m.icon, color: m.color,
+      vision: m.vision, free: m.free, supportsTools: m.supportsTools, maxTokens: m.maxTokens,
+      temperature: m.temperature, provider: m.provider,
+      reasoning: m.reasoning, reasoningOptions: m.reasoningOptions,
+      pool: m.pool, raceWindow: m.raceWindow
+    };
+  }
+  function payload() { return models.map(clean); }
+  function serialize() { return JSON.stringify(payload()); }
+  function blankModel() {
+    return normalize({ id: '', name: '', description: '', icon: 'gemini', maxTokens: 8192 });
+  }
+  function indexOfUid(uid) {
+    for (var i = 0; i < models.length; i++) if (models[i]._uid === uid) return i;
+    return -1;
+  }
+  /* uid пересоздаются при перезаливке моделей — переносим раскрытые карточки по id */
+  function openSnapshot() {
+    var byId = {};
+    models.forEach(function (m) { if (openIds[m._uid]) byId[m.id] = true; });
+    return byId;
+  }
+  function openRestore(byId) {
+    openIds = {};
+    models.forEach(function (m) { if (byId[m.id]) openIds[m._uid] = true; });
+  }
+
+  /* ---------- валидация ---------- */
+  function errorFor(m, i) {
+    if (!m.id.trim()) return 'Не заполнен id модели.';
+    if (m.id.indexOf('/') === -1) return 'id должен быть в формате vendor/model.';
+    for (var j = 0; j < models.length; j++) {
+      if (j !== i && models[j].id.trim() === m.id.trim()) return 'Дубликат: такой id уже есть в списке.';
+    }
+    if (m.temperature !== null && (!isFinite(m.temperature) || m.temperature < 0 || m.temperature > 2))
+      return 'temperature должна быть числом от 0 до 2 (или пустой) — иначе воркер её отбросит.';
+    if (m.reasoning && !EFFORT_RE.test(m.reasoning.effort))
+      return 'effort «' + m.reasoning.effort + '» воркер отбросит: разрешены латиница, цифры, _ и -, до 16 символов.';
+    var badOpt = (m.reasoningOptions || []).filter(function (o) { return !EFFORT_RE.test(o); })[0];
+    if (badOpt) return 'Вариант «' + badOpt + '» воркер отбросит: разрешены латиница, цифры, _ и -, до 16 символов.';
+    if ((m.reasoningOptions || []).length && !m.reasoning)
+      return 'Заданы варианты, но пустой reasoning.effort.';
+    if (m.pool.length === 1) return 'В гонке одна модель — добавьте ещё хотя бы одну или очистите поле.';
+    if (m.pool.length > 8) return 'В гонке не больше 8 моделей — лишние воркер отбросит.';
+    var badPool = m.pool.filter(function (p) { return p.indexOf('/') === -1; })[0];
+    if (badPool) return 'В гонке «' + badPool + '» — нужен id в формате vendor/model.';
+    if (m.pool.indexOf(m.id.trim()) > -1) return 'Гонка не может включать саму себя.';
+    if (!isFinite(m.raceWindow) || m.raceWindow < 0 || m.raceWindow > 10000) return 'Окно выбора — от 0 до 10000 мс.';
+    return '';
+  }
+  function allErrors() {
+    var out = [];
+    models.forEach(function (m, i) { var e = errorFor(m, i); if (e) out.push({ m: m, e: e }); });
+    return out;
+  }
+
+  /* ---------- «грязное» состояние ---------- */
+  function dirty() { return serialize() !== snapshot; }
+  function refreshState(extra) {
+    var d = dirty();
+    $('dot').className = 'dot' + (d ? ' dirty' : '');
+    var errs = allErrors().length;
+    var msg = extra || '';
+    if (errs) msg = errs + ' ' + plural(errs, 'ошибка', 'ошибки', 'ошибок') + ' в списке';
+    else if (d) msg = 'Есть несохранённые изменения';
+    $('stateMsg').textContent = msg;
+    $('stateMsg').style.color = errs ? 'var(--err)' : (d ? 'var(--warn)' : 'var(--mut)');
+    $('saveBtn').disabled = !d;
+  }
+  function plural(n, one, few, many) {
+    var a = Math.abs(n) % 100, b = a % 10;
+    if (a > 10 && a < 20) return many;
+    if (b > 1 && b < 5) return few;
+    if (b === 1) return one;
+    return many;
+  }
+  window.addEventListener('beforeunload', function (e) {
+    if (!$('app').hidden && dirty()) { e.preventDefault(); e.returnValue = ''; }
+  });
+
+  /* ---------- рендер списка ---------- */
+  function visible() {
+    var q = query.trim().toLowerCase();
+    if (!q) return models;
+    return models.filter(function (m) {
+      return (m.name + ' ' + m.id + ' ' + m.description).toLowerCase().indexOf(q) > -1;
+    });
+  }
+
+  function badgesHtml(m) {
+    var b = '';
+    if (m.pool.length) b += '<span class="chip acc">гонка ×' + m.pool.length + '</span>';
+    if (m.free) b += '<span class="chip ok">free</span>';
+    if (m.vision) b += '<span class="chip">vision</span>';
+    if (m.supportsTools) b += '<span class="chip">tools</span>';
+    if (m.reasoning) b += '<span class="chip acc">' + esc(m.reasoning.effort) + (m.reasoningOptions.length > 1 ? ' ↕' : '') + '</span>';
+    if (m.temperature !== null) b += '<span class="chip">t° ' + esc(m.temperature) + '</span>';
+    if (m.provider) b += '<span class="chip">' + esc(m.provider.order.join(',')) + '</span>';
+    if (catalogIds && m.id && !catalogIds[m.id]) b += '<span class="chip warn">нет в каталоге</span>';
+    return b;
+  }
+
+  function render() {
+    var list = $('list');
+    var arr = visible();
+    if (!arr.length) {
+      list.innerHTML = '<div class="panel" style="text-align:center;color:var(--mut-dim)">' +
+        (models.length ? 'Ничего не найдено по фильтру.' : 'Список пуст — добавьте модель из каталога.') + '</div>';
+      refreshState();
+      $('jsonArea').value = JSON.stringify(payload(), null, 2);
+      return;
+    }
+    list.innerHTML = arr.map(function (m) {
+      var i = models.indexOf(m);
+      var err = errorFor(m, i);
+      var open = !!openIds[m._uid];
+      return '<div class="mcard' + (open ? ' open' : '') + (err ? ' bad' : '') + '" data-uid="' + m._uid + '">' +
+        '<div class="mhead" draggable="true">' +
+          '<span class="grip" title="Перетащить">⠿</span>' +
+          '<span class="micon">' + iconHtml(m.icon) + '</span>' +
+          '<div class="mtitle">' +
+            '<div class="mname' + (m.name ? '' : ' empty') + '">' + esc(m.name || 'без названия') + '</div>' +
+            '<div class="mid mono">' + esc(m.id || '—') + '</div>' +
+          '</div>' +
+          '<div class="mbadges">' + badgesHtml(m) + '</div>' +
+          '<div class="macts">' +
+            '<button class="ico" data-act="up" title="Выше">↑</button>' +
+            '<button class="ico" data-act="down" title="Ниже">↓</button>' +
+            '<button class="ico" data-act="dup" title="Дублировать">⧉</button>' +
+            '<button class="ico danger" data-act="del" title="Удалить">✕</button>' +
+          '</div>' +
+          '<span class="caret">▾</span>' +
+        '</div>' +
+        (err ? '<div class="merr">' + esc(err) + '</div>' : '') +
+        (open ? '<div class="mbody">' + bodyHtml(m) + '</div>' : '') +
+      '</div>';
+    }).join('');
+    refreshState();
+    $('jsonArea').value = JSON.stringify(payload(), null, 2);
+  }
+
+  function fieldHtml(label, inner, hint) {
+    return '<div><label class="lb">' + label + '</label>' + inner +
+      (hint ? '<div class="hint">' + hint + '</div>' : '') + '</div>';
+  }
+
+  function bodyHtml(m) {
+    var isUrlIcon = /^https?:/i.test(m.icon);
+    var opts = m.reasoningOptions || [];
+    return '<div class="sect"><div class="sect-t">основное</div>' +
+      '<div class="grid">' +
+        fieldHtml('id модели', '<input class="fld mono" data-f="id" value="' + esc(m.id) + '" placeholder="vendor/model-name" spellcheck="false">') +
+        fieldHtml('Название', '<input class="fld" data-f="name" value="' + esc(m.name) + '" placeholder="Gemini 3.7 Flash">') +
+      '</div>' +
+      '<div style="margin-top:12px">' +
+        fieldHtml('Описание', '<input class="fld" data-f="description" value="' + esc(m.description) + '" placeholder="пусто — на сайте описание не показывается">') +
+      '</div>' +
+      '<div class="grid" style="margin-top:12px">' +
+        fieldHtml('Иконка', '<select class="fld" data-f="icon">' + ICONS.map(function (o) {
+          return '<option value="' + o + '"' + (!isUrlIcon && o === m.icon ? ' selected' : '') + '>' + o + '</option>';
+        }).join('') + '</select>') +
+        fieldHtml('Иконка по URL', '<input class="fld mono" data-f="iconUrl" value="' + esc(isUrlIcon ? m.icon : '') + '" placeholder="https://..." spellcheck="false">', 'Приоритетнее выпадающего списка') +
+      '</div>' +
+      '<div class="grid" style="margin-top:12px">' +
+        fieldHtml('Цвет в статистике', '<div class="row"><input type="color" class="dev-color" data-f="color" value="' + esc(m.color || '#6b7280') + '">' +
+          '<button class="btn sm ghost" data-colorauto="1">Автоматически</button></div>', m.color ? '' : 'Сейчас цвет подбирается сам') +
+      '</div>' +
+      '<div class="grid" style="margin-top:12px">' +
+        fieldHtml('max_tokens', '<input class="fld mono" type="number" min="256" step="256" data-f="maxTokens" value="' + esc(m.maxTokens) + '">') +
+        fieldHtml('temperature', '<input class="fld mono" type="number" min="0" max="2" step="0.1" data-f="temperature" value="' + (m.temperature === null ? '' : esc(m.temperature)) + '" placeholder="не задана">',
+          'Пусто — параметр не отправляется, модель решает сама. 0–2: ниже — предсказуемее, выше — свободнее.') +
+      '</div>' +
+    '</div>' +
+
+    '<div class="sect"><div class="sect-t">гонка моделей</div>' +
+      '<div class="grid">' +
+        fieldHtml('Участники', '<textarea class="fld mono" rows="4" data-f="pool" spellcheck="false" placeholder="по одному id в строке">' + esc(m.pool.join('\n')) + '</textarea>',
+          'Пусто — обычная модель. Если указаны — вопрос уходит сразу всем, отвечает та, что за окно написала больше. id карточки тогда любой, напр. race/fast-free.') +
+        fieldHtml('Окно выбора, мс', '<input class="fld mono" type="number" min="0" max="10000" step="100" data-f="raceWindow" value="' + esc(m.raceWindow) + '">',
+          'Отсчёт с первого слова любой модели. 0 — побеждает первая заговорившая.') +
+      '</div>' +
+      '<div class="row" style="margin-top:8px;gap:6px"><button class="btn sm ghost" data-poolfree="1">＋ бесплатные из каталога</button></div>' +
+    '</div>' +
+
+    '<div class="sect"><div class="sect-t">возможности</div>' +
+      '<div class="grid3">' +
+        '<label class="sw"><input type="checkbox" data-f="vision"' + (m.vision ? ' checked' : '') + '> Изображения</label>' +
+        '<label class="sw"><input type="checkbox" data-f="supportsTools"' + (m.supportsTools ? ' checked' : '') + '> Веб-поиск (tools)</label>' +
+        '<label class="sw"><input type="checkbox" data-f="free"' + (m.free ? ' checked' : '') + '> Бесплатная</label>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="sect"><div class="sect-t">рассуждение и провайдер</div>' +
+      '<div class="grid">' +
+        '<div>' +
+          fieldHtml('reasoning.effort (по умолчанию)',
+            '<input class="fld mono" list="effortHints" data-f="effort" value="' + esc(m.reasoning ? m.reasoning.effort : '') + '" placeholder="пусто — без reasoning" spellcheck="false">',
+            'Любое значение, которое понимает модель: medium, xhigh, none...') +
+          '<div style="margin-top:12px">' + fieldHtml('Варианты для пользователя',
+            '<input class="fld mono" data-f="effortOptions" value="' + esc(opts.join(', ')) + '" placeholder="напр. medium, high, xhigh" spellcheck="false">',
+            'Через запятую. Пусто или один вариант — переключатель на сайте не показывается.') + '</div>' +
+          '<div class="row" style="margin-top:8px;gap:6px">' +
+            '<button class="btn sm ghost" data-preset="medium, high">medium / high</button>' +
+            '<button class="btn sm ghost" data-preset="low, medium, high">low / medium / high</button>' +
+            '<button class="btn sm ghost" data-preset="">очистить</button>' +
+          '</div>' +
+        '</div>' +
+        '<div>' +
+          fieldHtml('provider.order', '<input class="fld mono" data-f="providerOrder" value="' + esc(m.provider ? m.provider.order.join(', ') : '') + '" placeholder="decart, deepinfra" spellcheck="false">', 'Пусто — блок provider не отправляется') +
+          '<label class="sw" style="margin-top:10px"><input type="checkbox" data-f="allowFallbacks"' + (m.provider && m.provider.allow_fallbacks ? ' checked' : '') + '> allow_fallbacks</label>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="sect"><div class="sect-t">как это увидят на сайте</div>' + previewHtml(m) + '</div>';
+  }
+
+  function previewHtml(m) {
+    var opts = m.reasoningOptions || [];
+    var showEff = m.reasoning && opts.length > 1;
+    var labels = { none: 'Выкл.', minimal: 'Мин.', low: 'Низкая', medium: 'Средняя', high: 'Высокая', xhigh: 'Макс.' };
+    return '<div class="prev">' +
+      '<span class="pi">' + iconHtml(m.icon) + '</span>' +
+      '<div class="pt">' +
+        '<div class="pn">' + esc(m.name || m.id || 'без названия') + '</div>' +
+        (m.description ? '<div class="pd">' + esc(m.description) + '</div>' : '') +
+      '</div>' +
+      '<span class="chk">✓</span>' +
+      (showEff ? '<div class="pe' + (opts.length > 3 ? ' wide' : '') + '">' + opts.map(function (o) {
+        return '<span class="' + (m.reasoning.effort === o ? 'on' : '') + '">' + esc(labels[o] || o) + '</span>';
+      }).join('') + '</div>' : '') +
+    '</div>';
+  }
+
+  /* точечное обновление шапки карточки, чтобы не терять фокус в полях */
+  function refreshCard(uid) {
+    var card = document.querySelector('.mcard[data-uid="' + uid + '"]');
+    if (!card) return;
+    var i = indexOfUid(uid), m = models[i];
+    var err = errorFor(m, i);
+    card.classList.toggle('bad', !!err);
+    card.querySelector('.micon').innerHTML = iconHtml(m.icon);
+    var nameEl = card.querySelector('.mname');
+    nameEl.textContent = m.name || 'без названия';
+    nameEl.classList.toggle('empty', !m.name);
+    card.querySelector('.mid').textContent = m.id || '—';
+    card.querySelector('.mbadges').innerHTML = badgesHtml(m);
+    var errEl = card.querySelector('.merr');
+    if (err && !errEl) {
+      errEl = document.createElement('div');
+      errEl.className = 'merr';
+      card.querySelector('.mhead').insertAdjacentElement('afterend', errEl);
+    }
+    if (errEl) { if (err) errEl.textContent = err; else errEl.remove(); }
+    var prev = card.querySelector('.prev');
+    if (prev) prev.outerHTML = previewHtml(m);
+    $('jsonArea').value = JSON.stringify(payload(), null, 2);
+    refreshState();
+  }
+
+  /* ---------- редактирование полей ---------- */
+  document.addEventListener('input', function (e) {
+    var f = e.target.getAttribute && e.target.getAttribute('data-f');
+    if (!f) return;
+    var card = e.target.closest('.mcard');
+    if (!card) return;
+    var m = models[indexOfUid(card.dataset.uid)];
+    if (!m) return;
+
+    if (f === 'id' || f === 'name' || f === 'description') m[f] = e.target.value;
+    else if (f === 'maxTokens') m.maxTokens = Number(e.target.value) || 8192;
+    else if (f === 'color') m.color = e.target.value;
+    else if (f === 'pool') m.pool = e.target.value.split(/[\s,]+/).map(function (s) { return s.trim(); }).filter(Boolean);
+    else if (f === 'raceWindow') m.raceWindow = e.target.value.trim() === '' ? 1500 : Number(e.target.value);
+    else if (f === 'temperature') {
+      var tv = e.target.value.trim();
+      m.temperature = tv === '' ? null : Number(tv);
+    }
+    else if (f === 'vision' || f === 'free' || f === 'supportsTools') m[f] = e.target.checked;
+    else if (f === 'icon') { if (!/^https?:/i.test(m.icon)) m.icon = e.target.value; }
+    else if (f === 'iconUrl') {
+      var url = e.target.value.trim();
+      m.icon = url ? url : (card.querySelector('[data-f="icon"]') || {}).value || 'gemini';
+    }
+    else if (f === 'providerOrder') {
+      var order = e.target.value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+      m.provider = order.length ? { order: order, allow_fallbacks: m.provider ? !!m.provider.allow_fallbacks : false } : null;
+      var af = card.querySelector('[data-f="allowFallbacks"]');
+      if (af) af.disabled = !m.provider;
+    }
+    else if (f === 'allowFallbacks') { if (m.provider) m.provider.allow_fallbacks = e.target.checked; }
+    else if (f === 'effort') {
+      var eff = e.target.value.trim();
+      m.reasoning = eff ? { effort: eff } : null;
+      if (!m.reasoning) {
+        m.reasoningOptions = [];
+        var optField = card.querySelector('[data-f="effortOptions"]');
+        if (optField) optField.value = '';
+      }
+    }
+    else if (f === 'effortOptions') {
+      m.reasoningOptions = e.target.value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+      /* варианты без базового effort не имеют смысла — подставляем первый */
+      if (m.reasoningOptions.length && !m.reasoning) {
+        m.reasoning = { effort: m.reasoningOptions[0] };
+        var effField = card.querySelector('[data-f="effort"]');
+        if (effField) effField.value = m.reasoning.effort;
+      }
+    }
+    refreshCard(card.dataset.uid);
+  });
+
+  /* ---------- клики по карточкам ---------- */
+  $('list').addEventListener('click', function (e) {
+    var card = e.target.closest('.mcard');
+    if (!card) return;
+    var uid = card.dataset.uid;
+    var i = indexOfUid(uid);
+
+    /* подставить в гонку бесплатные модели каталога, умеющие то же, что карточка */
+    if (e.target.closest('[data-poolfree]')) {
+      var pm = models[i];
+      if (!pm) return;
+      var fill = function () {
+        var free = (catalog || []).filter(function (c) {
+          return c.free && c.id.indexOf('openrouter/') !== 0 && (!pm.vision || c.vision);
+        }).sort(function (x, y) { return (y.tools - x.tools) || (y.ctx - x.ctx); });
+        var add = free.map(function (c) { return c.id; }).filter(function (id) { return pm.pool.indexOf(id) === -1; });
+        pm.pool = pm.pool.concat(add).slice(0, 8);
+        render();
+        toast(add.length ? 'Добавлено. Оставьте самые толковые — максимум 8.' : 'Новых бесплатных нет', 'ok', 5000);
+      };
+      if (catalog) fill(); else loadCatalog().then(fill);
+      return;
+    }
+
+    /* сброс цвета модели к автоматическому */
+    if (e.target.closest('[data-colorauto]')) {
+      var mm = models[i];
+      if (mm) { mm.color = null; render(); }
+      return;
+    }
+
+    /* пресеты набора вариантов */
+    var preset = e.target.closest('[data-preset]');
+    if (preset) {
+      var val = preset.getAttribute('data-preset');
+      var field = card.querySelector('[data-f="effortOptions"]');
+      field.value = val;
+      field.dispatchEvent(new Event('input', { bubbles: true }));
+      return;
+    }
+
+    var actBtn = e.target.closest('[data-act]');
+
+    if (actBtn) {
+      var act = actBtn.getAttribute('data-act');
+      if (act === 'del') {
+        if (!confirm('Удалить «' + (models[i].name || models[i].id || 'новую модель') + '»?')) return;
+        models.splice(i, 1); delete openIds[uid];
+      } else if (act === 'dup') {
+        var copy = normalize(clean(models[i]));
+        models.splice(i + 1, 0, copy);
+        openIds[copy._uid] = true;
+      } else if (act === 'up' && i > 0) {
+        models.splice(i - 1, 0, models.splice(i, 1)[0]);
+      } else if (act === 'down' && i < models.length - 1) {
+        models.splice(i + 1, 0, models.splice(i, 1)[0]);
+      }
+      render();
+      return;
+    }
+    /* клик по шапке = свернуть/развернуть */
+    if (e.target.closest('.mhead')) {
+      if (openIds[uid]) delete openIds[uid]; else openIds[uid] = true;
+      render();
+    }
+  });
+
+  /* ---------- drag & drop ---------- */
+  var dragUid = null;
+  $('list').addEventListener('dragstart', function (e) {
+    var head = e.target.closest('.mhead');
+    if (!head) return;
+    dragUid = head.parentNode.dataset.uid;
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', dragUid); } catch (err) {}
+    head.parentNode.classList.add('dragging');
+  });
+  $('list').addEventListener('dragover', function (e) {
+    if (!dragUid) return;
+    e.preventDefault();
+    var card = e.target.closest('.mcard');
+    clearDrop();
+    if (!card || card.dataset.uid === dragUid) return;
+    var r = card.getBoundingClientRect();
+    card.classList.add(e.clientY < r.top + r.height / 2 ? 'drop-before' : 'drop-after');
+  });
+  $('list').addEventListener('drop', function (e) {
+    if (!dragUid) return;
+    e.preventDefault();
+    var card = e.target.closest('.mcard');
+    if (card && card.dataset.uid !== dragUid) {
+      var r = card.getBoundingClientRect();
+      var before = e.clientY < r.top + r.height / 2;
+      var from = indexOfUid(dragUid);
+      var item = models.splice(from, 1)[0];
+      var to = indexOfUid(card.dataset.uid);
+      models.splice(before ? to : to + 1, 0, item);
+    }
+    clearDrop(); dragUid = null; render();
+  });
+  $('list').addEventListener('dragend', function () { clearDrop(); dragUid = null; render(); });
+  function clearDrop() {
+    Array.prototype.forEach.call(document.querySelectorAll('.drop-before,.drop-after'), function (el) {
+      el.classList.remove('drop-before', 'drop-after');
+    });
+  }
+
+  /* ---------- загрузка / сохранение ---------- */
+  function load(silent) {
+    if (!silent && dirty() && !confirm('Несохранённые изменения будут потеряны. Загрузить с сервера?')) return;
+    api('/api/models', { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (data) {
+        var list = Array.isArray(data) ? data : (data && data.models);
+        if (!Array.isArray(list)) throw new Error('Некорректный ответ сервера');
+        models = list.map(normalize);
+        openIds = {};
+        snapshot = serialize();
+        render();
+        toast('Загружено моделей: ' + models.length, 'ok');
+      })
+      .catch(function (err) { toast('Ошибка загрузки: ' + err.message, 'err', 6000); });
+  }
+
+  function save() {
+    var errs = allErrors();
+    if (errs.length) {
+      toast(errs[0].e + ' (проверьте «' + (errs[0].m.name || errs[0].m.id || 'без названия') + '»)', 'err', 6000);
+      openIds[errs[0].m._uid] = true;
+      render();
+      return;
+    }
+    if (!models.length) { toast('Список не может быть пустым', 'err'); return; }
+    var body = payload().map(function (m) { if (!m.name) m.name = m.id; return m; });
+    $('saveBtn').disabled = true;
+    $('stateMsg').textContent = 'Сохранение...';
+    api('/api/models', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(body)
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, status: r.status, j: j }; }); })
+      .then(function (res) {
+        if (res.status === 401) throw new Error('Сессия истекла — войдите заново');
+        if (!res.ok) throw new Error(res.j.error || 'Ошибка сохранения');
+        var wasOpen = openSnapshot();
+        models = (res.j.models || body).map(normalize);
+        openRestore(wasOpen);
+        snapshot = serialize();
+        render();
+        var time = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        refreshState('Сохранено в ' + time);
+        toast('Сохранено. Изменения видят все пользователи.', 'ok');
+      })
+      .catch(function (err) { toast(err.message, 'err', 6000); refreshState(); });
+  }
+
+  function resetDefaults() {
+    if (!confirm('Удалить список из KV и вернуть дефолтные модели воркера?')) return;
+    api('/api/models/reset', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.j.error || 'Ошибка сброса');
+        models = (res.j.models || []).map(normalize);
+        openIds = {}; snapshot = serialize();
+        render();
+        toast('Сброшено к дефолту', 'ok');
+      })
+      .catch(function (err) { toast(err.message, 'err', 6000); });
+  }
+
+  /* ---------- каталог OpenRouter ---------- */
+  var catOpen = {};             // раскрытые карточки каталога
+
+  function money(v) {
+    if (v == null || !isFinite(v)) return null;
+    if (v === 0) return '$0';
+    if (v >= 100) return '$' + v.toFixed(0);
+    if (v >= 1) return '$' + v.toFixed(2);
+    if (v >= 0.01) return '$' + v.toFixed(3);
+    return '$' + Number(v.toPrecision(2));
+  }
+  var perM = function (raw) { var n = Number(raw); return isFinite(n) && raw !== undefined && raw !== null && raw !== '' ? n * 1e6 : null; };
+  var perUnit = function (raw) { var n = Number(raw); return isFinite(n) && raw !== undefined && raw !== null && raw !== '' ? n : null; };
+  function ctxLabel(n) {
+    if (!n) return null;
+    return n >= 1e6 ? (Math.round(n / 1e5) / 10) + 'M' : Math.round(n / 1000) + 'K';
+  }
+
+  function loadCatalog() {
+    $('catList').innerHTML = '<div class="cat-empty">Загрузка каталога...</div>';
+    return api('/api/v1/models', { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (data) {
+        catalog = (data.data || []).map(function (c) {
+          var sp = c.supported_parameters || [];
+          var arch = c.architecture || {};
+          var mods = arch.input_modalities || [];
+          var out = arch.output_modalities || [];
+          var pr = c.pricing || {};
+          var tp = c.top_provider || {};
+          return {
+            id: c.id,
+            slug: c.canonical_slug || '',
+            name: c.name || c.id,
+            description: c.description || '',
+            created: c.created ? Number(c.created) : 0,
+            ctx: c.context_length || tp.context_length || 0,
+            maxOut: tp.max_completion_tokens || 0,
+            moderated: !!tp.is_moderated,
+            inMods: mods,
+            outMods: out,
+            tokenizer: arch.tokenizer || '',
+            instruct: arch.instruct_type || '',
+            vision: mods.indexOf('image') > -1,
+            audio: mods.indexOf('audio') > -1,
+            files: mods.indexOf('file') > -1,
+            tools: sp.indexOf('tools') > -1,
+            reasoning: sp.indexOf('reasoning') > -1,
+            params: sp,
+            free: /:free$/.test(c.id) || (pr.prompt !== undefined && Number(pr.prompt) === 0),
+            price: perM(pr.prompt),
+            priceOut: perM(pr.completion),
+            priceImg: perUnit(pr.image),
+            priceReq: perUnit(pr.request),
+            priceWeb: perUnit(pr.web_search),
+            priceReason: perM(pr.internal_reasoning),
+            priceCacheR: perM(pr.input_cache_read),
+            priceCacheW: perM(pr.input_cache_write)
+          };
+        }).sort(function (a, b) { return a.id < b.id ? -1 : 1; });
+        catalogIds = {};
+        catalog.forEach(function (c) { catalogIds[c.id] = true; });
+        $('catCount').textContent = catalog.length + ' моделей';
+        renderCatalog();
+        render();
+      })
+      .catch(function (err) {
+        $('catList').innerHTML = '<div class="cat-empty">Не удалось загрузить каталог: ' + esc(err.message) + '</div>';
+      });
+  }
+
+  function catDetails(c) {
+    var rows = [];
+    var priceRow = function (label, val, unit) {
+      var m = money(val);
+      if (m === null) return;
+      rows.push('<div class="kv"><span>' + label + '</span><b class="mono">' + m + (unit ? ' ' + unit : '') + '</b></div>');
+    };
+    priceRow('Вход', c.price, '/ 1M токенов');
+    priceRow('Выход', c.priceOut, '/ 1M токенов');
+    priceRow('Reasoning', c.priceReason, '/ 1M токенов');
+    priceRow('Чтение кэша', c.priceCacheR, '/ 1M токенов');
+    priceRow('Запись кэша', c.priceCacheW, '/ 1M токенов');
+    priceRow('Изображение', c.priceImg, '/ шт.');
+    priceRow('Запрос', c.priceReq, '/ шт.');
+    priceRow('Веб-поиск', c.priceWeb, '/ шт.');
+
+    var info = [];
+    if (c.ctx) info.push('<div class="kv"><span>Контекст</span><b class="mono">' + c.ctx.toLocaleString('ru') + ' токенов</b></div>');
+    if (c.maxOut) info.push('<div class="kv"><span>Максимум на ответ</span><b class="mono">' + c.maxOut.toLocaleString('ru') + ' токенов</b></div>');
+    if (c.inMods.length) info.push('<div class="kv"><span>Принимает</span><b class="mono">' + esc(c.inMods.join(', ')) + '</b></div>');
+    if (c.outMods.length) info.push('<div class="kv"><span>Отдаёт</span><b class="mono">' + esc(c.outMods.join(', ')) + '</b></div>');
+    if (c.tokenizer) info.push('<div class="kv"><span>Токенизатор</span><b class="mono">' + esc(c.tokenizer) + '</b></div>');
+    if (c.instruct) info.push('<div class="kv"><span>Instruct</span><b class="mono">' + esc(c.instruct) + '</b></div>');
+    info.push('<div class="kv"><span>Модерация</span><b class="mono">' + (c.moderated ? 'да' : 'нет') + '</b></div>');
+    if (c.created) info.push('<div class="kv"><span>В каталоге с</span><b class="mono">' + new Date(c.created * 1000).toLocaleDateString('ru') + '</b></div>');
+    if (c.slug && c.slug !== c.id) info.push('<div class="kv"><span>Канонический id</span><b class="mono">' + esc(c.slug) + '</b></div>');
+
+    return '<div class="cat-det">' +
+      (c.description ? '<div class="cat-desc">' + esc(c.description.slice(0, 600)) + (c.description.length > 600 ? '…' : '') + '</div>' : '') +
+      '<div class="cat-cols">' +
+        '<div><div class="cat-st">Цены</div>' + (rows.length ? rows.join('') : '<div class="hint" style="margin:0">нет данных</div>') + '</div>' +
+        '<div><div class="cat-st">Характеристики</div>' + info.join('') + '</div>' +
+      '</div>' +
+      (c.params.length ? '<div class="cat-st" style="margin-top:12px">Поддерживаемые параметры</div><div class="cat-meta">' +
+        c.params.map(function (p) { return '<span class="chip">' + esc(p) + '</span>'; }).join('') + '</div>' : '') +
+    '</div>';
+  }
+
+  function renderCatalog() {
+    if (!catalog) return;
+    var q = $('catSearch').value.trim().toLowerCase();
+    var have = {};
+    models.forEach(function (m) { have[m.id] = true; });
+    var arr = catalog.filter(function (c) {
+      return !q || (c.id + ' ' + c.name).toLowerCase().indexOf(q) > -1;
+    });
+    var shown = arr.slice(0, 60);
+    if (!shown.length) { $('catList').innerHTML = '<div class="cat-empty">Ничего не найдено</div>'; return; }
+    $('catList').innerHTML = shown.map(function (c) {
+      var meta = '';
+      if (c.free) meta += '<span class="chip ok">бесплатно</span>';
+      else {
+        if (c.price != null) meta += '<span class="chip">' + money(c.price) + ' / 1M вход</span>';
+        if (c.priceOut != null) meta += '<span class="chip">' + money(c.priceOut) + ' / 1M выход</span>';
+      }
+      if (c.ctx) meta += '<span class="chip">' + ctxLabel(c.ctx) + ' контекст</span>';
+      if (c.maxOut) meta += '<span class="chip">' + ctxLabel(c.maxOut) + ' ответ</span>';
+      if (c.vision) meta += '<span class="chip">картинки</span>';
+      if (c.audio) meta += '<span class="chip">аудио</span>';
+      if (c.files) meta += '<span class="chip">файлы</span>';
+      if (c.tools) meta += '<span class="chip">tools</span>';
+      if (c.reasoning) meta += '<span class="chip acc">reasoning</span>';
+      if (c.moderated) meta += '<span class="chip warn">модерация</span>';
+      var open = !!catOpen[c.id];
+      return '<div class="cat-row' + (open ? ' open' : '') + '" data-cid="' + esc(c.id) + '">' +
+        '<div class="cat-top">' +
+          '<div class="cat-main" data-toggle="' + esc(c.id) + '">' +
+            '<div class="cat-n">' + esc(c.name) + '<span class="cat-arw">' + (open ? '▾' : '▸') + '</span></div>' +
+            '<div class="cat-i mono">' + esc(c.id) + '</div>' +
+            '<div class="cat-meta">' + meta + '</div>' +
+          '</div>' +
+          (have[c.id]
+            ? '<span class="chip ok">добавлена</span>'
+            : '<button class="btn sm" data-add="' + esc(c.id) + '">Добавить</button>') +
+        '</div>' +
+        (open ? catDetails(c) : '') +
+      '</div>';
+    }).join('') + (arr.length > shown.length
+      ? '<div class="cat-empty">Показано 60 из ' + arr.length + ' — уточните запрос</div>' : '');
+  }
+
+  $('catList').addEventListener('click', function (e) {
+    var tog = e.target.closest('[data-toggle]');
+    if (tog) {
+      var tid = tog.getAttribute('data-toggle');
+      catOpen[tid] = !catOpen[tid];
+      renderCatalog();
+      return;
+    }
+    var btn = e.target.closest('[data-add]');
+    if (!btn) return;
+    var id = btn.getAttribute('data-add');
+    var c = catalog.filter(function (x) { return x.id === id; })[0];
+    if (!c) return;
+    var m = normalize({
+      id: c.id,
+      name: c.name.replace(/^[^:]+:\s*/, ''),
+      description: $('catDesc').checked ? c.description.split('\n')[0].slice(0, 160) : '',
+      icon: guessIcon(c.id),
+      vision: c.vision,
+      free: c.free,
+      supportsTools: c.tools,
+      maxTokens: c.maxOut || Math.min(c.ctx || 8192, 16000) || 8192,
+      reasoning: c.reasoning ? { effort: 'medium' } : null,
+      reasoningOptions: []
+    });
+    models.push(m);
+    openIds[m._uid] = true;
+    renderCatalog();
+    render();
+    toast('Добавлена: ' + m.name, 'ok');
+    var card = document.querySelector('.mcard[data-uid="' + m._uid + '"]');
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  $('catSearch').addEventListener('input', renderCatalog);
+  $('catDesc').addEventListener('change', function () { });
+
+
+
+  /* ---------- коды доступа ---------- */
+  var keysList = [];
+
+  function loadKeys() {
+    $('keysList').innerHTML = '<div class="cat-empty">Загрузка...</div>';
+    api('/api/keys', { cache: 'no-store', headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.j.error || 'Ошибка загрузки');
+        keysList = (res.j.codes || []).map(function (c) {
+          return { id: c.id, code: c.code, label: c.label || '', enabled: c.enabled !== false, guest: !!c.guest, keyMask: c.keyMask, keyId: c.keyId, key: '' };
+        });
+        renderKeys();
+      })
+      .catch(function (err) { $('keysList').innerHTML = '<div class="cat-empty">Ошибка: ' + esc(err.message) + '</div>'; });
+  }
+
+  function keysCollect() {
+    var rows = [].slice.call($('keysList').querySelectorAll('.key-row'));
+    return rows.map(function (row) {
+      var i = Number(row.getAttribute('data-i'));
+      var base = keysList[i] || {};
+      var get = function (f) { var el = row.querySelector('[data-kf="' + f + '"]'); return el ? el.value : ''; };
+      var chk = row.querySelector('[data-kf="enabled"]');
+      var gst = row.querySelector('[data-kf="guest"]');
+      return {
+        id: base.id,
+        code: get('code').trim(),
+        key: get('key').trim(),
+        label: get('label').trim(),
+        enabled: chk ? chk.checked : true,
+        guest: gst ? gst.checked : false,
+        keyMask: base.keyMask,
+        keyId: base.keyId
+      };
+    });
+  }
+
+  function renderKeys() {
+    $('keysCount').textContent = keysList.length + ' ' +
+      (keysList.length % 10 === 1 && keysList.length % 100 !== 11 ? 'код' :
+      (keysList.length % 10 > 1 && keysList.length % 10 < 5 && (keysList.length % 100 < 10 || keysList.length % 100 > 20) ? 'кода' : 'кодов'));
+
+    if (!keysList.length) {
+      $('keysList').innerHTML = '<div class="cat-empty">Кодов пока нет. Нажмите «＋ Код», впишите слово и ключ OpenRouter.</div>';
+      return;
+    }
+    $('keysList').innerHTML = keysList.map(function (k, i) {
+      return '<div class="key-row" data-i="' + i + '">' +
+        '<div class="key-grid">' +
+          '<div><label>Код для входа</label><input class="fld mono" data-kf="code" value="' + esc(k.code || '') + '" placeholder="Qwee123" spellcheck="false"></div>' +
+          '<div><label>Ключ OpenRouter</label><input class="fld mono" type="password" data-kf="key" value="" placeholder="' + esc(k.keyMask || 'sk-or-v1-...') + '" spellcheck="false" autocomplete="new-password"></div>' +
+          '<div><label>Подпись</label><input class="fld" data-kf="label" value="' + esc(k.label || '') + '" placeholder="кому выдан"></div>' +
+        '</div>' +
+        '<div class="key-foot">' +
+          '<label class="sw"><input type="checkbox" data-kf="enabled"' + (k.enabled ? ' checked' : '') + '> работает</label>' +
+          '<label class="sw" title="Этот код сайт сам выдаёт тем, кто пришёл без своего. Их переписка попадает в журнал — на сайте об этом написано."><input type="checkbox" data-kf="guest"' + (k.guest ? ' checked' : '') + '> гостевой</label>' +
+          (k.keyId ? '<span class="chip mono" title="Общая группа расхода">группа ' + esc(k.keyId.slice(0, 8)) + '…</span>' : '<span class="chip warn">не сохранён</span>') +
+          '<div class="spacer"></div>' +
+          '<button class="ico" data-kdel="' + i + '" title="Удалить код">✕</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function saveKeys() {
+    var payload = keysCollect();
+    var bad = payload.filter(function (k) { return !k.code || k.code.length < 3; })[0];
+    if (bad !== undefined) { toast('Код должен быть не короче 3 символов', 'err'); return; }
+    var missing = payload.filter(function (k) { return !k.id && !k.key; })[0];
+    if (missing) { toast('Для нового кода «' + missing.code + '» нужен ключ OpenRouter', 'err', 6000); return; }
+
+    api('/api/keys', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(payload.map(function (k) {
+        var o = { code: k.code, label: k.label, enabled: k.enabled, guest: !!k.guest };
+        if (k.id) o.id = k.id;
+        if (k.key) o.key = k.key;          // пусто = оставить сохранённый
+        return o;
+      }))
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.j.error || 'Ошибка сохранения');
+        toast('Сохранено кодов: ' + res.j.count, 'ok');
+        loadKeys();
+      })
+      .catch(function (err) { toast(err.message, 'err', 7000); });
+  }
+
+  $('keysList').addEventListener('change', function (e) {
+    if (!e.target.matches('[data-kf="guest"]') || !e.target.checked) return;
+    [].slice.call($('keysList').querySelectorAll('[data-kf="guest"]')).forEach(function (el) {
+      if (el !== e.target) el.checked = false;
+    });
+    toast('Гостевой код может быть только один', 'ok');
+  });
+
+  $('keysList').addEventListener('click', function (e) {
+    var del = e.target.closest('[data-kdel]');
+    if (!del) return;
+    var i = Number(del.getAttribute('data-kdel'));
+    var cur = keysCollect();
+    if (cur[i] && cur[i].id && !confirm('Удалить код «' + cur[i].code + '»? Он перестанет работать у всех, кто им пользуется.')) return;
+    cur.splice(i, 1);
+    keysList = cur;
+    renderKeys();
+    toast('Удалено из списка — не забудьте «Сохранить»', 'ok');
+  });
+
+  $('keysAdd').addEventListener('click', function () {
+    keysList = keysCollect();
+    keysList.push({ id: null, code: '', key: '', label: '', enabled: true, guest: false, keyMask: '', keyId: '' });
+    renderKeys();
+    var inputs = $('keysList').querySelectorAll('.key-row [data-kf="code"]');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  });
+  $('keysSave').addEventListener('click', saveKeys);
+  $('keysClose').addEventListener('click', function () { $('keysPanel').hidden = true; });
+  $('keysBtn').addEventListener('click', function () {
+    if (togglePanel('keysPanel')) loadKeys();
+  });
+
+  /* ---------- расход по устройствам ---------- */
+  var DEVICE_PALETTE = ['#4285f4', '#ea4335', '#34a853', '#f9a825', '#a142f4', '#00acc1', '#ff7043', '#8bc34a', '#ec407a', '#5c6bc0'];
+  var devGroups = null, devList = [], devKey = null, devTimers = {}, devBalance = null;
+
+  function devColors(ids) {
+    var sorted = ids.slice().sort(), map = {};
+    sorted.forEach(function (id, i) { map[id] = DEVICE_PALETTE[i % DEVICE_PALETTE.length]; });
+    return map;
+  }
+  function fmtMoney(v) { return '$' + Number(v || 0).toFixed(6); }
+  function fmtDate(ts) { return ts ? new Date(Number(ts)).toLocaleDateString('ru') : '—'; }
+
+  function loadDevGroups() {
+    $('devList').innerHTML = '<div class="cat-empty">Загрузка...</div>';
+    api('/api/usage/keys', { cache: 'no-store', headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.j.error || 'Ошибка загрузки');
+        devGroups = res.j.groups || [];
+        if (!devGroups.length) {
+          $('devKey').innerHTML = '';
+          $('devCount').textContent = '0 ключей';
+          $('devList').innerHTML = '<div class="cat-empty">Пока никто ничего не потратил. Данные появятся после первых запросов в чате.</div>';
+          return;
+        }
+        $('devKey').innerHTML = devGroups.map(function (g) {
+          return '<option value="' + esc(g.key) + '">ключ ' + esc(g.key.slice(0, 8)) + '… · ' +
+            g.devices + ' уст. · ' + fmtMoney(g.cost) + '</option>';
+        }).join('');
+        var n = devGroups.length, n10 = n % 10, n100 = n % 100;
+        var word = (n10 === 1 && n100 !== 11) ? ' ключ' : ((n10 > 1 && n10 < 5 && (n100 < 10 || n100 > 20)) ? ' ключа' : ' ключей');
+        $('devCount').textContent = n + word;
+        devKey = (devKey && devGroups.some(function (g) { return g.key === devKey; })) ? devKey : devGroups[0].key;
+        $('devKey').value = devKey;
+        loadDevices();
+      })
+      .catch(function (err) {
+        $('devList').innerHTML = '<div class="cat-empty">Ошибка: ' + esc(err.message) + '</div>';
+      });
+  }
+
+  function loadDevices() {
+    if (!devKey) return;
+    /* с токеном приходят и настоящие суммы, и подменные */
+    api('/api/usage?key=' + encodeURIComponent(devKey), { cache: 'no-store', headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { devList = j.devices || []; renderDevices(); loadDevBalance(); })
+      .catch(function (err) { $('devList').innerHTML = '<div class="cat-empty">Ошибка: ' + esc(err.message) + '</div>'; });
+  }
+
+  function devColorOf(d, auto) { return d.color || auto[d.tag]; }
+
+  function devTotals() {
+    return {
+      shown: devList.reduce(function (s, d) { return s + (Number(d.cost) || 0); }, 0),
+      real: devList.reduce(function (s, d) { return s + (Number(d.realCost) || 0); }, 0)
+    };
+  }
+
+  function devSubHtml(d, shownTotal) {
+    var share = shownTotal > 0 ? (Number(d.cost) / shownTotal) * 100 : 0;
+    var faked = (d.costOffset !== null && d.costOffset !== undefined) ||
+                (d.requestsOffset !== null && d.requestsOffset !== undefined);
+    return esc(d.device) + ' · ' + fmtDate(d.first) + ' — ' + fmtDate(d.last) +
+      ' · в полосе ' + share.toFixed(1) + '% (' + fmtMoney(d.cost) + ')' +
+      (faked ? ' · <span class="chip warn">подменено</span>' : '');
+  }
+
+  /* неучтённое = настоящий расход ключа минус то, что насчитали устройства.
+     На сайте этой строки нет — она только здесь. */
+  function totalsLine(tot) {
+    var out = 'на самом деле ' + fmtMoney(tot.real);
+    if (devBalance && devBalance.ok) {
+      var un = Math.max(devBalance.usage - tot.real, 0);
+      out += ' · по ключу потрачено ' + fmtMoney(devBalance.usage) +
+             ' · неучтённое ' + fmtMoney(un) +
+             (devBalance.limit > 0 ? ' · лимит ' + fmtMoney(devBalance.limit) : '');
+    } else if (devBalance && devBalance.error) {
+      out += ' · неучтённое неизвестно: ' + devBalance.error;
+    }
+    return out;
+  }
+
+  function loadDevBalance() {
+    devBalance = null;
+    if (!devKey) return;
+    api('/api/usage/balance?key=' + encodeURIComponent(devKey), { cache: 'no-store', headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { devBalance = j; refreshDeviceVisuals(); })
+      .catch(function () { devBalance = { ok: false, error: 'нет связи' }; refreshDeviceVisuals(); });
+  }
+
+  function renderDevices() {
+    if (!devList.length) {
+      $('devList').innerHTML = '<div class="cat-empty">В этой группе нет устройств.</div>';
+      return;
+    }
+    /* полоса и доли считаются по тому, что видит сайт */
+    var tot = devTotals();
+    /* по метке, а не по сырому id: на сайте порядок тот же */
+    var auto = devColors(devList.map(function (d) { return d.tag; }));
+
+    var bar = '<div class="dev-bar">' + devList.map(function (d) {
+      var w = tot.shown > 0 ? (Number(d.cost) / tot.shown) * 100 : 0;
+      return '<i style="width:' + w + '%;background:' + devColorOf(d, auto) + '" title="' + esc(d.name || d.device) + '"></i>';
+    }).join('') + '</div>';
+
+    var rows = devList.map(function (d) {
+      var faked = d.costOffset !== null && d.costOffset !== undefined;
+      var fakedReq = d.requestsOffset !== null && d.requestsOffset !== undefined;
+      return '<div class="dev-row" data-dev="' + esc(d.device) + '">' +
+        '<div class="dev-head">' +
+          '<input type="color" class="dev-color" data-dev="' + esc(d.device) + '" value="' + esc(devColorOf(d, auto)) + '" title="Цвет в полосе баланса">' +
+          '<input class="fld dev-name" data-dev="' + esc(d.device) + '" value="' + esc(d.name || '') + '" placeholder="Имя устройства" maxlength="40">' +
+          '<button class="ico" data-devauto="' + esc(d.device) + '" title="Автоматический цвет">⟲</button>' +
+          '<button class="ico" data-devdel="' + esc(d.device) + '" title="Убрать из статистики">✕</button>' +
+        '</div>' +
+        '<div class="dev-edit">' +
+          '<div><label>Показывать трату</label>' +
+            '<input class="fld mono dev-fake" type="number" step="0.000001" min="0" data-devfake="cost" data-dev="' + esc(d.device) + '" value="' + (faked ? esc(d.cost) : '') + '" placeholder="' + fmtMoney(d.realCost) + '"></div>' +
+          '<div><label>Показывать запросы</label>' +
+            '<input class="fld mono dev-fake" type="number" step="1" min="0" data-devfake="req" data-dev="' + esc(d.device) + '" value="' + (fakedReq ? esc(d.requests) : '') + '" placeholder="' + (Number(d.realRequests) || 0) + '"></div>' +
+          '<div><label>На самом деле</label>' +
+            '<div class="dev-real mono" data-dev="' + esc(d.device) + '">' + fmtMoney(d.realCost) + ' · ' + (Number(d.realRequests) || 0) + ' зап.</div></div>' +
+        '</div>' +
+        '<div class="dev-sub mono" data-dev="' + esc(d.device) + '">' + devSubHtml(d, tot.shown) + '</div>' +
+      '</div>';
+    }).join('');
+
+    $('devList').innerHTML = bar + rows +
+      '<div class="dev-row" style="border-bottom:none">' +
+        '<div class="dev-head"><b style="flex:1">Итого по ключу</b><b class="mono" id="devTotal">' + fmtMoney(tot.shown) + '</b></div>' +
+        '<div class="dev-sub mono" id="devTotalReal">' + totalsLine(tot) + '</div>' +
+      '</div>';
+  }
+
+  /* обновление цифр и полосы без перерисовки полей — иначе теряется фокус при вводе */
+  function refreshDeviceVisuals() {
+    if (!devList.length) return;
+    var tot = devTotals();
+    /* по метке, а не по сырому id: на сайте порядок тот же */
+    var auto = devColors(devList.map(function (d) { return d.tag; }));
+    var bar = $('devList').querySelector('.dev-bar');
+    if (bar) {
+      bar.innerHTML = devList.map(function (d) {
+        var w = tot.shown > 0 ? (Number(d.cost) / tot.shown) * 100 : 0;
+        return '<i style="width:' + w + '%;background:' + devColorOf(d, auto) + '" title="' + esc(d.name || d.device) + '"></i>';
+      }).join('');
+    }
+    devList.forEach(function (d) {
+      var sub = $('devList').querySelector('.dev-sub[data-dev="' + d.device + '"]');
+      if (sub) sub.innerHTML = devSubHtml(d, tot.shown);
+      var real = $('devList').querySelector('.dev-real[data-dev="' + d.device + '"]');
+      if (real) real.textContent = fmtMoney(d.realCost) + ' · ' + (Number(d.realRequests) || 0) + ' зап.';
+    });
+    if ($('devTotal')) $('devTotal').textContent = fmtMoney(tot.shown);
+    if ($('devTotalReal')) $('devTotalReal').textContent = totalsLine(tot);
+  }
+
+  /* правка карточки: имя, цвет, подменные числа */
+  function patchDevice(device, body, okMsg, hard) {
+    api('/api/usage/rename', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(Object.assign({ key: devKey, device: device }, body))
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.j.error || 'Ошибка');
+        var d = devList.filter(function (x) { return x.device === device; })[0];
+        if (d) {
+          d.name = res.j.name; d.color = res.j.color;
+          d.cost = res.j.cost; d.requests = res.j.requests;
+          d.costOffset = res.j.costOffset; d.requestsOffset = res.j.requestsOffset;
+          d.realCost = res.j.realCost; d.realRequests = res.j.realRequests;
+        }
+        if (okMsg) toast(okMsg, 'ok');
+        if (hard) renderDevices(); else refreshDeviceVisuals();
+      })
+      .catch(function (err) { toast(err.message, 'err', 6000); });
+  }
+
+  function devDebounce(key, fn, ms) {
+    clearTimeout(devTimers[key]);
+    devTimers[key] = setTimeout(fn, ms || 600);
+  }
+
+  $('devList').addEventListener('input', function (e) {
+    var t = e.target;
+    var device = t.getAttribute && t.getAttribute('data-dev');
+    if (!device) return;
+
+    if (t.classList.contains('dev-name')) {
+      devDebounce(device + ':name', function () { patchDevice(device, { name: t.value.trim() }, 'Имя сохранено'); }, 700);
+    } else if (t.classList.contains('dev-color')) {
+      devDebounce(device + ':color', function () { patchDevice(device, { color: t.value }); }, 400);
+    } else if (t.classList.contains('dev-fake')) {
+      var which = t.getAttribute('data-devfake');
+      devDebounce(device + ':' + which, function () {
+        var v = t.value.trim();
+        patchDevice(device, which === 'cost' ? { showCost: v } : { showRequests: v });
+      }, 600);
+    }
+  });
+
+  $('devList').addEventListener('click', function (e) {
+    var auto = e.target.closest('[data-devauto]');
+    if (auto) {
+      patchDevice(auto.getAttribute('data-devauto'), { color: '' }, 'Цвет снова автоматический', true);
+      return;
+    }
+    var del = e.target.closest('[data-devdel]');
+    if (!del) return;
+    var device = del.getAttribute('data-devdel');
+    var d = devList.filter(function (x) { return x.device === device; })[0];
+    if (!confirm('Убрать «' + ((d && d.name) || device) + '» из статистики? Счётчик начнётся заново.')) return;
+    api('/api/usage/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ key: devKey, device: device })
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.j.error || 'Ошибка');
+        toast('Устройство убрано', 'ok');
+        loadDevGroups();
+      })
+      .catch(function (err) { toast(err.message, 'err', 6000); });
+  });
+
+  $('devKey').addEventListener('change', function () { devKey = $('devKey').value; loadDevices(); });
+  $('devReload').addEventListener('click', loadDevGroups);
+  $('devClose').addEventListener('click', function () { $('devPanel').hidden = true; });
+  $('devReset').addEventListener('click', function () {
+    if (!devKey) return;
+    if (!confirm('Обнулить статистику всех устройств этого ключа?')) return;
+    api('/api/usage/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ key: devKey })
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.j.error || 'Ошибка');
+        toast('Обнулено: ' + res.j.removed, 'ok');
+        devKey = null;
+        loadDevGroups();
+      })
+      .catch(function (err) { toast(err.message, 'err', 6000); });
+  });
+  $('devBtn').addEventListener('click', function () {
+    if (togglePanel('devPanel')) loadDevGroups();
+  });
+
+  /* ---------- журнал гостевых диалогов ----------
+     Пишется только для кода с галочкой «гостевой»; на сайте гостю об этом сказано. */
+  function fmtWhen(ts) {
+    if (!ts) return '—';
+    var d = new Date(Number(ts));
+    return d.toLocaleDateString('ru') + ' ' + d.toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function loadLog() {
+    $('logList').innerHTML = '<div class="cat-empty">Загрузка...</div>';
+    api('/api/guestlog', { cache: 'no-store', headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.j.error || 'Ошибка загрузки');
+        var list = (res.j.entries || []).slice().reverse();
+        $('logCount').textContent = list.length ? list.length + ' зап.' : 'пусто';
+        if (!list.length) {
+          $('logList').innerHTML = '<div class="cat-empty">Пока пусто. Сюда попадают вопросы и ответы тех, кто зашёл без своего кода.</div>';
+          return;
+        }
+        $('logList').innerHTML = list.map(function (e) {
+          var m = models.filter(function (x) { return x.id === e.model; })[0];
+          return '<div class="log-row">' +
+            '<div class="log-head">' +
+              '<span class="chip">' + esc(fmtWhen(e.at)) + '</span>' +
+              (e.tag ? '<span class="chip mono">' + esc(String(e.tag).slice(0, 6)) + '</span>' : '') +
+              (e.model ? '<span class="chip acc">' + esc(m ? m.name : e.model) + '</span>' : '') +
+            '</div>' +
+            (e.q ? '<div class="log-q">' + esc(e.q) + '</div>' : '') +
+            (e.a ? '<div class="log-a">' + esc(e.a) + '</div>' : '') +
+          '</div>';
+        }).join('');
+      })
+      .catch(function (err) { $('logList').innerHTML = '<div class="cat-empty">Ошибка: ' + esc(err.message) + '</div>'; });
+  }
+
+  $('logReload').addEventListener('click', loadLog);
+  $('logClose').addEventListener('click', function () { $('logPanel').hidden = true; });
+  $('logBtn').addEventListener('click', function () { if (togglePanel('logPanel')) loadLog(); });
+  $('logClear').addEventListener('click', function () {
+    if (!confirm('Стереть весь журнал гостевых диалогов? Это не отменить.')) return;
+    api('/api/guestlog/clear', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.j.error || 'Ошибка');
+        toast('Журнал очищен', 'ok');
+        loadLog();
+      })
+      .catch(function (err) { toast(err.message, 'err', 6000); });
+  });
+
+  /* ---------- панели ---------- */
+  function togglePanel(id) {
+    var p = $(id);
+    var wasHidden = p.hidden;
+    $('catPanel').hidden = true; $('jsonPanel').hidden = true; $('devPanel').hidden = true; $('keysPanel').hidden = true; $('logPanel').hidden = true;
+    p.hidden = !wasHidden;
+    if (!p.hidden) p.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return !p.hidden;
+  }
+
+  $('catalogBtn').addEventListener('click', function () {
+    if (togglePanel('catPanel')) { if (!catalog) loadCatalog(); else renderCatalog(); $('catSearch').focus(); }
+  });
+  $('catClose').addEventListener('click', function () { $('catPanel').hidden = true; });
+  $('jsonBtn').addEventListener('click', function () {
+    if (togglePanel('jsonPanel')) $('jsonArea').value = JSON.stringify(payload(), null, 2);
+  });
+  $('jsonClose').addEventListener('click', function () { $('jsonPanel').hidden = true; });
+
+  $('jsonApply').addEventListener('click', function () {
+    try {
+      var parsed = JSON.parse($('jsonArea').value);
+      if (!Array.isArray(parsed)) throw new Error('ожидается массив');
+      models = parsed.map(normalize);
+      openIds = {};
+      render();
+      toast('JSON применён — не забудьте сохранить', 'ok');
+    } catch (err) { toast('JSON: ' + err.message, 'err', 6000); }
+  });
+  $('jsonCopy').addEventListener('click', function () {
+    var text = JSON.stringify(payload(), null, 2);
+    if (navigator.clipboard) navigator.clipboard.writeText(text).then(function () { toast('Скопировано', 'ok'); });
+    else { $('jsonArea').select(); document.execCommand('copy'); toast('Скопировано', 'ok'); }
+  });
+  $('jsonExport').addEventListener('click', function () {
+    var blob = new Blob([JSON.stringify(payload(), null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'models-' + new Date().toISOString().slice(0, 10) + '.json';
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  });
+  $('jsonImport').addEventListener('click', function () { $('fileInput').click(); });
+  $('fileInput').addEventListener('change', function (e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var parsed = JSON.parse(reader.result);
+        var list = Array.isArray(parsed) ? parsed : parsed.models;
+        if (!Array.isArray(list)) throw new Error('в файле нет массива моделей');
+        if (!confirm('Заменить текущий список (' + models.length + ') на список из файла (' + list.length + ')?')) return;
+        models = list.map(normalize);
+        openIds = {};
+        render();
+        toast('Файл загружен — не забудьте сохранить', 'ok');
+      } catch (err) { toast('Файл: ' + err.message, 'err', 6000); }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+
+  /* ---------- тулбар ---------- */
+  $('expandBtn').addEventListener('click', function () {
+    models.forEach(function (m) { openIds[m._uid] = true; }); render();
+  });
+  $('collapseBtn').addEventListener('click', function () { openIds = {}; render(); });
+  $('addBtn').addEventListener('click', function () {
+    var m = blankModel();
+    models.push(m); openIds[m._uid] = true;
+    query = '';
+    render();
+    var card = document.querySelector('.mcard[data-uid="' + m._uid + '"]');
+    if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); card.querySelector('[data-f="id"]').focus(); }
+  });
+  $('reloadBtn').addEventListener('click', function () { load(false); });
+  $('saveBtn').addEventListener('click', save);
+  $('resetBtn').addEventListener('click', resetDefaults);
+
+  document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+      e.preventDefault();
+      if (!$('app').hidden && dirty()) save();
+    }
+    if (e.key === 'Escape') { $('catPanel').hidden = true; $('jsonPanel').hidden = true; $('devPanel').hidden = true; $('keysPanel').hidden = true; $('logPanel').hidden = true; }
+  });
+
+  /* ---------- вход ---------- */
+  function enterApp() {
+    $('login').hidden = true;
+    $('app').hidden = false;
+    $('baseLabel').textContent = base;
+    load(true);
+  }
+
+  $('eyeBtn').addEventListener('click', function () {
+    var f = $('pwd');
+    f.type = f.type === 'password' ? 'text' : 'password';
+  });
+
+  $('loginBtn').addEventListener('click', function () {
+    base = ($('apiBase').value || DEFAULT_BASE).trim();
+    var pwd = $('pwd').value;
+    if (!pwd) { $('loginMsg').textContent = 'Введите пароль'; return; }
+    $('loginMsg').style.color = 'var(--mut)';
+    $('loginMsg').textContent = 'Проверка...';
+    $('loginBtn').disabled = true;
+
+    /* проверка пароля без записи: пустой массив не проходит валидацию,
+       но авторизация в воркере проверяется раньше — 401 значит «пароль неверный» */
+    fetch(base.replace(/\/+$/, '') + '/api/models', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + pwd },
+      body: '[]'
+    })
+      .then(function (r) {
+        $('loginBtn').disabled = false;
+        $('loginMsg').style.color = 'var(--err)';
+        if (r.status === 401) { $('loginMsg').textContent = 'Неверный пароль'; return; }
+        if (r.status >= 500) { $('loginMsg').textContent = 'Сервер вернул HTTP ' + r.status + ' (проверьте KV-биндинг)'; return; }
+        token = pwd;
+        sessionStorage.setItem('admin_token', token);
+        localStorage.setItem('admin_api_base', base);
+        $('loginMsg').textContent = '';
+        enterApp();
+      })
+      .catch(function (err) {
+        $('loginBtn').disabled = false;
+        $('loginMsg').style.color = 'var(--err)';
+        $('loginMsg').textContent = 'Нет связи с ' + base + ' (' + err.message + ')';
+      });
+  });
+
+  $('pwd').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('loginBtn').click(); });
+  $('logoutBtn').addEventListener('click', function () {
+    if (dirty() && !confirm('Есть несохранённые изменения. Выйти?')) return;
+    sessionStorage.removeItem('admin_token');
+    token = ''; models = []; snapshot = '[]'; openIds = {};
+    $('app').hidden = true; $('login').hidden = false; $('pwd').value = '';
+  });
+
+  if (token) enterApp();
+})();
+</script>
+</body>
+</html>

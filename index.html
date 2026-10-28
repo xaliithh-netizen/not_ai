@@ -1,0 +1,2463 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>not ai</title>
+
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.0/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.453.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/lib/marked.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.11/dist/purify.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400&display=swap');
+
+        :root {
+            --bg-body: #131314; --bg-sidebar: #1e1f20; --bg-surface: #1e1f20; --bg-input: #1e1f20;
+            --bg-user-msg: #282a2c; --text-primary: #e3e3e3; --text-secondary: #c4c7c5;
+            --accent-blue: #a8c7fa; --border-color: #444746; --hover-bg: #333537;
+            --tool-menu-bg: #28292a; --active-chat-bg: #6e6f70; --active-chat-text: #fafbfc;
+            --safe-btn: #000000; --cost-bg: rgba(255,255,255,0.08); --search-bg: rgba(255,255,255,0.04);
+        }
+        [data-theme="light"] {
+            --bg-body: #ffffff; --bg-sidebar: #f0f4f9; --bg-surface: #ffffff; --bg-input: #f0f4f9;
+            --bg-user-msg: #e9eef6; --text-primary: #1f1f1f; --text-secondary: #444746;
+            --accent-blue: #0b57d0; --border-color: #e0e3e7; --hover-bg: #e9eef6;
+            --tool-menu-bg: #f0f4f9; --active-chat-bg: #e8e8e8; --active-chat-text: #0a0a0a;
+            --safe-btn: #e5e5e5; --cost-bg: rgba(0,0,0,0.06); --search-bg: rgba(0,0,0,0.03);
+        }
+        body { background-color: var(--bg-body); color: var(--text-primary); font-family: 'Google Sans','Roboto',sans-serif; overflow: hidden; transition: background-color .3s; }
+        .markdown-body p { margin-bottom: 1rem; line-height: 1.6; color: var(--text-primary); }
+        .markdown-body pre { background-color: var(--bg-sidebar); padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0; border: 1px solid var(--border-color); }
+        .markdown-body code { font-family: 'Roboto Mono',monospace; background-color: rgba(128,128,128,.15); padding: .2em .4em; border-radius: 4px; font-size: .9em; }
+        .markdown-body pre code { background: none; padding: 0; }
+        .markdown-body a { color: var(--accent-blue); text-decoration: underline; }
+        .markdown-body ul, .markdown-body ol { margin: .5rem 0 1rem 1.25rem; list-style: revert; }
+        @keyframes slideUp { from { opacity:0; transform: translateY(10px);} to {opacity:1; transform:translateY(0);} }
+        .animate-slide-up { animation: slideUp .3s ease-out forwards; }
+        @keyframes pulseDot { 0%,100%{opacity:.35} 50%{opacity:1} }
+        .pulse-dot { animation: pulseDot 1.2s ease-in-out infinite; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: #444746; border-radius: 4px; }
+        .scrollbar-slim::-webkit-scrollbar { width: 4px; }
+        .scrollbar-hide::-webkit-scrollbar { width: 6px; }
+
+        /* кружок выбора своего цвета */
+        .dot-color { -webkit-appearance: none; appearance: none; border: none; padding: 0; background: none; cursor: pointer; }
+        .dot-color::-webkit-color-swatch-wrapper { padding: 0; }
+        .dot-color::-webkit-color-swatch { border: 1px solid rgba(128,128,128,.45); border-radius: 50%; }
+
+        /* ================= обёртка «Википедия» (режим скрытности) ================= */
+        .wk {
+            --wk-bg:#fff; --wk-fg:#202122; --wk-mut:#54595d; --wk-bd:#a2a9b1; --wk-bd2:#eaecf0;
+            --wk-link:#3366cc; --wk-btn:#f8f9fa; --wk-hover:#eaecf0;
+            position:fixed; inset:0; overflow-y:auto; background:var(--wk-bg); color:var(--wk-fg);
+            font-family:-apple-system,"Segoe UI",Roboto,Arial,Helvetica,sans-serif;
+            font-size:14px; line-height:1.6; z-index:40;
+        }
+        .wk.dark {
+            --wk-bg:#101418; --wk-fg:#eaecf0; --wk-mut:#a2a9b1; --wk-bd:#54595d; --wk-bd2:#27292d;
+            --wk-link:#88a9f3; --wk-btn:#27292d; --wk-hover:#27292d;
+        }
+        .wk *, .wk *::before, .wk *::after { box-sizing:border-box; }
+        .wk ::selection { background:#b6d4fe; }
+
+        .wk-head { display:flex; align-items:center; gap:14px; padding:6px 14px 6px 8px; background:var(--wk-bg);
+            border-bottom:1px solid var(--wk-bd2); position:sticky; top:0; z-index:6; }
+        .wk-burger { width:34px; height:34px; flex:0 0 34px; border:0; background:none; cursor:pointer;
+            border-radius:2px; color:var(--wk-fg); display:flex; align-items:center; justify-content:center; }
+        .wk-burger:hover { background:var(--wk-hover); }
+        .wk-logo { display:flex; flex-direction:column; justify-content:center; margin-right:6px; user-select:none; }
+        .wk-logo .wm { display:flex; align-items:flex-start; gap:2px; }
+        .wk-logo b { font-family:"Linux Libertine","Times New Roman",Georgia,serif; font-size:21px; font-weight:400;
+            letter-spacing:.055em; line-height:1; color:var(--wk-fg); }
+        .wk-logo img { width:17px; height:17px; margin-top:-3px; }
+        .wk-logo span { font-size:8px; color:var(--wk-mut); letter-spacing:.01em; margin-top:4px; white-space:nowrap; }
+
+        .wk-search { display:flex; flex:1 1 auto; max-width:480px; }
+        .wk-search .wrap { position:relative; flex:1; }
+        .wk-search .ico { position:absolute; left:9px; top:9px; width:15px; height:15px; opacity:.55; pointer-events:none; }
+        .wk-search input { width:100%; height:33px; padding:0 10px 0 31px; border:1px solid var(--wk-bd);
+            border-radius:2px 0 0 2px; font:inherit; font-size:14px; background:var(--wk-bg); color:var(--wk-fg); }
+        .wk-search input::placeholder { color:var(--wk-mut); }
+        .wk-search input:focus { outline:none; border-color:#36c; box-shadow:inset 0 0 0 1px #36c; }
+        .wk-search button { height:33px; padding:0 13px; margin-left:-1px; border:1px solid var(--wk-bd);
+            border-radius:0 2px 2px 0; background:var(--wk-btn); color:var(--wk-fg); font:inherit; font-weight:600;
+            font-size:14px; cursor:pointer; white-space:nowrap; }
+        .wk-search button:hover { background:var(--wk-hover); }
+
+        .wk-nav { margin-left:auto; display:flex; align-items:center; gap:15px; font-size:14px; white-space:nowrap; }
+        .wk-nav a { color:var(--wk-link); text-decoration:none; cursor:pointer; }
+        .wk-nav a:hover { text-decoration:underline; }
+
+        .wk-body { display:flex; align-items:flex-start; justify-content:center; gap:0; padding:26px 16px 120px; }
+        .wk-toc, .wk-app { width:232px; flex:0 0 232px; position:sticky; top:66px; font-size:14px; }
+        .wk-toc { padding-right:22px; }
+        .wk-app { padding-left:22px; }
+        .wk-main { flex:1 1 auto; max-width:840px; padding:0 34px; min-width:0; }
+        .wk.wk-w-wide .wk-main { max-width:1400px; }
+        .wk-t-small .wk-main { font-size:14px; }
+        .wk-t-standard .wk-main { font-size:15px; }
+        .wk-t-large .wk-main { font-size:17px; }
+
+        .wk-ph { display:flex; align-items:center; gap:8px; padding-bottom:7px; border-bottom:1px solid var(--wk-bd2); margin-bottom:11px; }
+        .wk-ph h3 { margin:0; font-size:14px; font-weight:700; }
+        .wk-hide { border:1px solid var(--wk-bd); background:var(--wk-btn); color:var(--wk-fg); font:inherit; font-size:12px;
+            padding:1px 7px; border-radius:2px; cursor:pointer; }
+        .wk-hide:hover { background:var(--wk-hover); }
+        .wk-show { border:0; background:none; color:var(--wk-link); font:inherit; font-size:13px; cursor:pointer; padding:2px 0; }
+        .wk-show:hover { text-decoration:underline; }
+
+        .wk-toc ul { list-style:none; margin:0; padding:0; }
+        .wk-toc li { margin:0 0 2px; }
+        .wk-toc a { display:block; padding:5px 8px 5px 18px; color:var(--wk-link); text-decoration:none; cursor:pointer;
+            border-radius:2px; position:relative; }
+        .wk-toc a:hover { background:var(--wk-hover); text-decoration:underline; }
+        .wk-toc a.top { color:var(--wk-fg); font-weight:700; }
+        .wk-toc .arw { position:absolute; left:2px; top:6px; font-size:11px; color:var(--wk-mut); }
+
+        .wk-grp { margin-bottom:15px; }
+        .wk-grp > div:first-child { color:var(--wk-mut); font-size:13px; border-bottom:1px solid var(--wk-bd2);
+            padding-bottom:4px; margin-bottom:7px; }
+        .wk-rad { display:flex; align-items:center; gap:8px; padding:4px 2px; cursor:pointer; }
+        .wk-rad input { accent-color:#36c; margin:0; width:14px; height:14px; cursor:pointer; }
+
+        /* реплики: пользовательская строка как абзац статьи, ответ — с отступом */
+        .wk-turn { margin-bottom:46px; }
+        .wk-q { margin:0 0 20px; color:var(--wk-fg); white-space:pre-wrap; word-break:break-word; }
+        .wk-a { padding-left:22px; }
+        .wk-a .markdown-body p:last-child { margin-bottom:0; }
+        .wk-att { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 12px; }
+        .wk-att img { max-width:190px; max-height:190px; border:1px solid var(--wk-bd2); }
+        .wk-dots span { display:inline-block; width:6px; height:6px; margin-right:4px; border-radius:50%;
+            background:var(--wk-mut); animation:pulseDot 1.1s ease-in-out infinite; }
+        .wk-dots span:nth-child(2) { animation-delay:.15s; }
+        .wk-dots span:nth-child(3) { animation-delay:.3s; }
+        .wk-err { color:#d33; }
+
+        @media (max-width:1200px) { .wk-app { display:none; } }
+        @media (max-width:980px) { .wk-toc { display:none; } .wk-main { padding:0; } .wk-logo span { display:none; } }
+        @media (max-width:640px) { .wk-nav { display:none; } }
+
+        /* выезжающая панель у левого края */
+        .wk-edge { position:fixed; left:0; top:0; width:8px; height:100%; z-index:70; }
+        .wk-panel { position:fixed; left:0; top:0; bottom:0; width:290px; z-index:71; display:flex; flex-direction:column;
+            background:var(--bg-sidebar); color:var(--text-primary); border-right:1px solid var(--border-color);
+            transition:transform .22s ease, opacity .22s ease; box-shadow:0 0 40px rgba(0,0,0,.35);
+            font-family:'Google Sans','Roboto',sans-serif; font-size:14px; }
+        .wk-panel.off { transform:translateX(-100%); opacity:0; pointer-events:none; }
+    </style>
+
+<!-- Автоматический перенос данных со старого домена -->
+<script>
+  (function autoMigrate() {
+    if (localStorage.getItem('gemini_auto_migrated')) return;
+    const iframe = document.createElement('iframe');
+    iframe.src = 'https://not0ai.xalithh.workers.dev/migration-bridge';
+    iframe.style.display = 'none';
+    window.addEventListener('message', async (e) => {
+      if (e.data && e.data.type === 'NOT_AI_MIGRATION_DATA') {
+        const backup = e.data; let updated = false;
+        if (backup.localStorage) {
+          Object.keys(backup.localStorage).forEach(k => {
+            if (!localStorage.getItem(k)) { localStorage.setItem(k, backup.localStorage[k]); updated = true; }
+          });
+        }
+        if (backup.chats && Array.isArray(backup.chats) && backup.chats.length > 0) {
+          try {
+            await new Promise((resolve) => {
+              const req = indexedDB.open('GeminiChatDB', 1);
+              req.onupgradeneeded = (evt) => {
+                const db = evt.target.result;
+                if (!db.objectStoreNames.contains('chats')) db.createObjectStore('chats', { keyPath: 'id' });
+              };
+              req.onsuccess = (evt) => {
+                const db = evt.target.result;
+                const tx = db.transaction('chats', 'readwrite');
+                tx.objectStore('chats').put({ id: 'all_chats', data: backup.chats });
+                tx.oncomplete = () => resolve();
+              };
+            });
+            updated = true;
+          } catch(err) { console.error(err); }
+        }
+        localStorage.setItem('gemini_auto_migrated', 'true');
+        if (updated) window.location.reload();
+      }
+    });
+    document.head.appendChild(iframe);
+  })();
+</script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo, Component } = React;
+
+        const APP_VERSION = "v4.0.0";
+        const API_BASE = "/api";
+        const WIKI_FAVICON = "https://i.ibb.co/CCv64Bw/image.png";
+        const MAX_SEARCHES = 2;
+        const SEARCH_MODEL = "perplexity/sonar";
+
+        /* ---------- дефолтные модели (fallback, если /api/models недоступен) ---------- */
+        const DEFAULT_MODELS = [
+            { id:'google/gemini-3.7-flash', name:'Gemini 3.7 Flash', description:'Быстрая универсальная модель нового поколения', icon:'gemini', vision:true, free:false, supportsTools:true, maxTokens:8192, provider:null, reasoning:null, reasoningOptions:[] },
+            { id:'openai/gpt-5.6-luna', name:'GPT-5.6 Luna', description:'Логика, код и точные вычисления. Настраиваемое рассуждение.', icon:'chatgpt', vision:true, free:false, supportsTools:true, maxTokens:32000, provider:null, reasoning:{ effort:'medium' }, reasoningOptions:['medium','high'] },
+            { id:'deepseek/deepseek-v4-flash-latest', name:'DeepSeek V4 Flash', description:'Баланс скорости и интеллекта. Только провайдер Decart.', icon:'deepseek', vision:false, free:false, supportsTools:true, maxTokens:16000, provider:{ order:['decart'], allow_fallbacks:false }, reasoning:null, reasoningOptions:[] },
+            { id:'google/gemma-4-26b-a4b-it:free', name:'Gemma 4 26B', description:'Бесплатная лёгкая и сообразительная модель от Google', icon:'gemma', vision:true, free:true, supportsTools:false, maxTokens:8000, provider:null, reasoning:null, reasoningOptions:[] }
+        ];
+
+        const SEARCH_TOOL = {
+            type: "function",
+            function: {
+                name: "web_search",
+                description: "Поиск актуальной информации в интернете (Perplexity Sonar). Используй для свежих новостей, цен, курсов, расписаний, дат, статистики и любых фактов, которые могли измениться после обучения. Максимум 2 вызова на один ответ.",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        query: { type: "string", description: "Короткий поисковый запрос (1-8 слов) на языке источника" }
+                    },
+                    required: ["query"]
+                }
+            }
+        };
+
+        const normalizeModel = (m) => {
+            const id = String(m.id || '').trim();
+            const effort = m.reasoning && typeof m.reasoning === 'object' ? String(m.reasoning.effort || '') : '';
+            const temp = (m.temperature === null || m.temperature === undefined || m.temperature === '') ? null : Number(m.temperature);
+            return {
+                id,
+                name: String(m.name || id),
+                description: String(m.description || ''),
+                icon: String(m.icon || 'gemini'),
+                color: /^#[0-9a-f]{6}$/i.test(String(m.color || '')) ? String(m.color).toLowerCase() : null,
+                vision: m.vision !== false,
+                free: !!m.free,
+                supportsTools: m.supportsTools !== false,
+                maxTokens: Number(m.maxTokens) > 0 ? Number(m.maxTokens) : 8192,
+                temperature: (temp !== null && isFinite(temp) && temp >= 0 && temp <= 2) ? temp : null,
+                provider: (m.provider && typeof m.provider === 'object' && Array.isArray(m.provider.order) && m.provider.order.length)
+                    ? { order: m.provider.order.map(String), allow_fallbacks: m.provider.allow_fallbacks !== false } : null,
+                reasoning: effort ? { effort } : null,
+                reasoningOptions: Array.isArray(m.reasoningOptions) ? m.reasoningOptions.map(String) : [],
+                pool: Array.isArray(m.pool) ? m.pool.map(String).filter(p => p.includes('/') && p !== id).slice(0, 8) : [],
+                raceWindow: Number.isFinite(Number(m.raceWindow)) ? Math.min(Math.max(Number(m.raceWindow), 0), 10000) : 1500
+            };
+        };
+
+        /* гонка моделей: вопрос уходит сразу всем участникам. С первого слова любой
+           из них идёт окно выбора, по его концу остаётся та, что написала больше
+           (рассуждения считаются за полцены). Кто успел дописать ответ целиком
+           внутри окна — побеждает сразу. Остальные обрываются; их уже начатые
+           генерации уходят в onLoser, чтобы потраченное не потерялось. */
+        const raceModels = ({ url, init, body, pool, windowMs, signal, onLoser }) => new Promise((resolve, reject) => {
+            const racers = pool.map(id => ({ id, ctrl: new AbortController(), chunks: [], score: 0, said: 0,
+                                              genId: null, done: false, failed: false, sink: null, errMsg: '' }));
+            let winner = null, timer = null, windowOver = false, settled = false, lastErr = null;
+
+            const errResponse = (msg) => new Response(JSON.stringify({ error: { message: msg } }),
+                { status: 502, headers: { 'Content-Type': 'application/json' } });
+
+            const leader = () => racers.filter(r => !r.failed && r.score > 0).sort((a, b) => b.score - a.score)[0];
+
+            const crown = (r) => {
+                if (winner || settled || !r) return;
+                winner = r; settled = true; clearTimeout(timer);
+                racers.forEach(o => {
+                    if (o === r) return;
+                    o.ctrl.abort();
+                    if (o.genId && onLoser) onLoser(o.genId, o.id);
+                });
+                const stream = new ReadableStream({
+                    start(c) {
+                        r.chunks.forEach(ch => c.enqueue(ch));
+                        r.chunks = [];
+                        if (r.done) c.close(); else r.sink = c;
+                    },
+                    cancel() { r.ctrl.abort(); }
+                });
+                resolve({ res: new Response(stream, { status: 200, headers: { 'Content-Type': 'text/event-stream' } }), modelId: r.id });
+            };
+
+            const fail = (r, res) => {
+                r.failed = true;
+                if (res) lastErr = res;
+                else if (r.errMsg) lastErr = errResponse(`${r.id}: ${r.errMsg}`);
+                if (winner || settled) return;
+                if (racers.every(o => o.failed)) {
+                    settled = true; clearTimeout(timer);
+                    resolve({ res: lastErr || errResponse(''), modelId: null });
+                } else if (windowOver) crown(leader());
+            };
+
+            const onAbort = () => {
+                racers.forEach(r => r.ctrl.abort());
+                if (!settled) { settled = true; clearTimeout(timer); reject(new DOMException('Aborted', 'AbortError')); }
+            };
+            if (signal) {
+                if (signal.aborted) { onAbort(); return; }
+                signal.addEventListener('abort', onAbort, { once: true });
+            }
+
+            const startWindow = () => {
+                if (timer || winner) return;
+                timer = setTimeout(() => { windowOver = true; crown(leader()); }, Math.max(0, windowMs || 0));
+            };
+
+            racers.forEach(async (r) => {
+                let res;
+                try {
+                    res = await fetch(url, { ...init, body: JSON.stringify({ ...body, model: r.id }), signal: r.ctrl.signal });
+                } catch (e) { fail(r, null); return; }
+                if (!res.ok) { fail(r, res); return; }
+
+                const reader = res.body.getReader();
+                const dec = new TextDecoder('utf-8');
+                let buf = '';
+                try {
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        if (r.sink) { r.sink.enqueue(value); continue; }
+                        if (winner) return;
+                        r.chunks.push(value);
+                        buf += dec.decode(value, { stream: true });
+                        const lines = buf.split('\n');
+                        buf = lines.pop();
+                        for (const line of lines) {
+                            const s = line.trim();
+                            if (!s.startsWith('data: ') || s === 'data: [DONE]') continue;
+                            let d;
+                            try { d = JSON.parse(s.slice(6)); } catch { continue; }
+                            if (d.id) r.genId = d.id;
+                            if (d.error) r.errMsg = d.error.message || 'error';
+                            const delta = d.choices?.[0]?.delta;
+                            if (!delta) continue;
+                            const said = (delta.content || '').length + (Array.isArray(delta.tool_calls) ? JSON.stringify(delta.tool_calls).length : 0);
+                            r.said += said;
+                            r.score += said + (delta.reasoning || '').length * 0.5;
+                        }
+                        if (r.score > 0) { startWindow(); if (windowOver) crown(leader()); }
+                    }
+                } catch (e) {
+                    if (r.sink) { try { r.sink.error(e); } catch {} return; }
+                    fail(r, null);
+                    return;
+                }
+                r.done = true;
+                if (r.sink) { try { r.sink.close(); } catch {} return; }
+                if (winner) return;
+                /* одни рассуждения без ответа — не победа */
+                if (r.said > 0 && !r.errMsg) crown(r);
+                else fail(r, null);
+            });
+        });
+
+        const safeStorage = {
+            getItem: (k) => { try { return localStorage.getItem(k); } catch(e){ return null; } },
+            setItem: (k,v) => { try { localStorage.setItem(k,v); } catch(e){} },
+            removeItem: (k) => { try { localStorage.removeItem(k); } catch(e){} }
+        };
+
+        /* ---------- учёт расхода по устройствам ----------
+           Каждое устройство получает постоянный id в localStorage. Расход шлётся
+           на воркер и группируется по хэшу API-ключа: один ключ = одна общая полоса баланса. */
+        const DEVICE_ID_KEY = 'device_id_v1';
+        const deviceId = (() => {
+            let v = safeStorage.getItem(DEVICE_ID_KEY);
+            if (!v || !/^[a-f0-9]{12}$/.test(v)) {
+                let hex = '';
+                try {
+                    const b = new Uint8Array(6);
+                    crypto.getRandomValues(b);
+                    hex = Array.from(b).map(x => x.toString(16).padStart(2, '0')).join('');
+                } catch (e) {
+                    hex = (Date.now().toString(16) + Math.random().toString(16).slice(2)).replace(/[^a-f0-9]/g, '').slice(0, 12);
+                }
+                v = hex.padEnd(12, '0').slice(0, 12);
+                safeStorage.setItem(DEVICE_ID_KEY, v);
+            }
+            return v;
+        })();
+
+        /* автоимя вида «Windows · Chrome · 7f3a» — потом переименовывается в админке */
+        const deviceAutoName = (() => {
+            const ua = navigator.userAgent || '';
+            let os = 'Устройство';
+            if (/Windows/i.test(ua)) os = 'Windows';
+            else if (/Macintosh|Mac OS X/i.test(ua)) os = 'Mac';
+            else if (/Android/i.test(ua)) os = 'Android';
+            else if (/iPhone|iPad|iPod/i.test(ua)) os = 'iOS';
+            else if (/CrOS/i.test(ua)) os = 'ChromeOS';
+            else if (/Linux/i.test(ua)) os = 'Linux';
+            let br = '';
+            if (/Edg\//.test(ua)) br = 'Edge';
+            else if (/OPR\/|Opera/.test(ua)) br = 'Opera';
+            else if (/YaBrowser/.test(ua)) br = 'Yandex';
+            else if (/Firefox\//.test(ua)) br = 'Firefox';
+            else if (/Chrome\//.test(ua)) br = 'Chrome';
+            else if (/Safari\//.test(ua)) br = 'Safari';
+            return [os, br, deviceId.slice(0, 4)].filter(Boolean).join(' · ');
+        })();
+
+        /* запасной цвет модели, если в админке не задан */
+        const autoModelColor = (id) => {
+            let h = 2166136261;
+            const str = String(id);
+            for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619);
+            return `hsl(${Math.abs(h) % 360} 55% 58%)`;
+        };
+
+        /* цвета раздаются по позиции в отсортированном списке id — одинаково на всех устройствах */
+        const DEVICE_PALETTE = ['#4285f4', '#ea4335', '#34a853', '#f9a825', '#a142f4', '#00acc1', '#ff7043', '#8bc34a', '#ec407a', '#5c6bc0'];
+        const deviceColorMap = (ids) => {
+            const sorted = [...ids].sort();
+            const map = {};
+            sorted.forEach((id, i) => { map[id] = DEVICE_PALETTE[i % DEVICE_PALETTE.length]; });
+            return map;
+        };
+
+        async function sha16(value) {
+            if (!value) return null;
+            try {
+                const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(value)));
+                return Array.from(new Uint8Array(buf)).slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('');
+            } catch (e) { return null; }
+        }
+        const hashApiKey = sha16;
+
+        const PENDING_KEY = 'usage_pending_v1';
+        const PENDING_GENS_KEY = 'usage_gens_v1';
+        const loadJSON = (k, def) => {
+            try { const v = JSON.parse(safeStorage.getItem(k) || 'null'); return v == null ? def : v; }
+            catch (e) { return def; }
+        };
+        const saveJSON = (k, v) => safeStorage.setItem(k, JSON.stringify(v));
+
+        /* накопление и отложенная отправка: одна запись в KV вместо записи на каждое сообщение.
+           Накопленное сразу кладётся в localStorage, чтобы не пропасть при закрытии вкладки. */
+        const usageReporter = {
+            pending: loadJSON(PENDING_KEY, { cost: 0, requests: 0, keyHash: null, models: {} }),
+            timer: null,
+            keyHash: null,
+            onFlush: null,
+            persist() { saveJSON(PENDING_KEY, this.pending); },
+            add(keyHash, cost, requests, modelId) {
+                if (!keyHash || !(cost > 0)) return;
+                this.keyHash = keyHash;
+                this.pending.keyHash = keyHash;
+                this.pending.cost = (this.pending.cost || 0) + cost;
+                this.pending.requests = (this.pending.requests || 0) + (requests || 0);
+                if (modelId) {
+                    if (!this.pending.models) this.pending.models = {};
+                    const was = this.pending.models[modelId] || { cost: 0, requests: 0 };
+                    this.pending.models[modelId] = {
+                        cost: was.cost + cost,
+                        requests: was.requests + (requests || 0)
+                    };
+                }
+                this.persist();
+                clearTimeout(this.timer);
+                this.timer = setTimeout(() => this.flush(), 4000);
+            },
+            async flush() {
+                clearTimeout(this.timer);
+                const keyHash = this.pending.keyHash || this.keyHash;
+                const cost = this.pending.cost || 0;
+                const requests = this.pending.requests || 0;
+                const models = this.pending.models || {};
+                if (!keyHash || !(cost > 0)) return;
+                this.pending = { cost: 0, requests: 0, keyHash: null, models: {} };
+                this.persist();
+                try {
+                    const res = await fetch(`${API_BASE}/usage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ key: keyHash, device: deviceId, name: deviceAutoName,
+                                               cost: Math.round(cost * 1e6) / 1e6, requests, models })
+                    });
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    if (this.onFlush) this.onFlush();
+                } catch (e) {
+                    /* не потеряем: вернём в очередь до следующей попытки */
+                    this.pending.keyHash = keyHash;
+                    this.pending.cost = (this.pending.cost || 0) + cost;
+                    this.pending.requests = (this.pending.requests || 0) + requests;
+                    if (!this.pending.models) this.pending.models = {};
+                    for (const id of Object.keys(models)) {
+                        const was = this.pending.models[id] || { cost: 0, requests: 0 };
+                        this.pending.models[id] = {
+                            cost: was.cost + models[id].cost,
+                            requests: was.requests + models[id].requests
+                        };
+                    }
+                    this.persist();
+                }
+            }
+        };
+
+        /* генерации, по которым стоимость ещё не пришла. Переживают закрытие вкладки
+           и удаление чата: деньги привязаны к устройству, а не к переписке. */
+        const genQueue = {
+            list: loadJSON(PENDING_GENS_KEY, []),
+            save() { this.list = this.list.slice(-30); saveJSON(PENDING_GENS_KEY, this.list); },
+            add(id, keyHash, reqInc, modelId) {
+                if (!id || !keyHash) return;
+                if (this.list.some(g => g.id === id)) return;
+                this.list.push({ id, keyHash, reqInc: reqInc || 0, modelId: modelId || '', at: Date.now() });
+                this.save();
+            },
+            remove(id) { this.list = this.list.filter(g => g.id !== id); this.save(); }
+        };
+        window.addEventListener('beforeunload', () => { try { usageReporter.flush(); } catch (e) {} });
+
+        const Icon = ({ name, className }) => {
+            const spanRef = useRef(null);
+            useEffect(() => {
+                let active = true;
+                const tryInit = () => {
+                    if (!active) return;
+                    if (spanRef.current && window.lucide) {
+                        spanRef.current.innerHTML = `<i data-lucide="${name}" class="${className || ''}"></i>`;
+                        try { window.lucide.createIcons({ root: spanRef.current }); } catch (e) {}
+                    }
+                };
+                tryInit();
+                const interval = setInterval(() => {
+                    if (window.lucide && spanRef.current && !spanRef.current.querySelector('svg')) tryInit();
+                    else if (window.lucide) clearInterval(interval);
+                }, 100);
+                return () => { active = false; clearInterval(interval); };
+            }, [name, className]);
+            return <span ref={spanRef} className="inline-flex items-center justify-center flex-shrink-0 leading-none" />;
+        };
+
+        /* ---------- иконки ---------- */
+        const imgIcon = (src) => ({ className, active = true }) => (
+            <img src={src} className={`${className} transition-all duration-300 ${!active ? 'grayscale opacity-40' : ''}`} alt="" draggable="false" />
+        );
+        const GeminiIcon = imgIcon("https://www.gstatic.com/lamda/images/gemini_sparkle_aurora_33f86dc0c0257da337c63.svg");
+        const DeepSeekIcon = imgIcon("https://i.ibb.co/vCC9PQ7S/image.png");
+        const FreeOptionIcon = imgIcon("https://i.ibb.co/3Yv1xq1K/image.png");
+        const GemmaIcon = imgIcon("https://i.ibb.co/G4Zdnf7Y/image.png");
+        const MetaIcon = imgIcon("https://i.ibb.co/Q7fB6grM/image.png");
+        const PerplexityIcon = imgIcon("https://i.ibb.co/3Yv1xq1K/image.png");
+        const RouterIcon = ({ className, active = true, theme }) => (
+            <img src={theme === 'light' ? 'https://i.ibb.co/23g12YV6/image.png' : 'https://i.ibb.co/kssPJfdp/image.png'}
+                 className={`${className} transition-all duration-300 ${!active ? 'grayscale opacity-40' : ''}`} alt="" draggable="false" />
+        );
+        const ChatGPTIcon = ({ className, active = true }) => (
+            <svg viewBox="0 0 24 24" className={`${className} transition-all duration-300 ${!active ? 'grayscale opacity-40 text-gray-400' : 'text-[#10a37f]'}`} xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.073zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.5 2.6002 1.5v3.0043l-2.5998 1.5-2.6024-1.5z" />
+            </svg>
+        );
+
+        const ModelIcon = ({ icon, className, active = true, theme }) => {
+            if (icon && /^https?:\/\//i.test(icon)) return <img src={icon} className={`${className} rounded-sm transition-all duration-300 ${!active ? 'grayscale opacity-40' : ''}`} alt="" draggable="false" />;
+            switch (icon) {
+                case 'chatgpt': return <ChatGPTIcon className={className} active={active} />;
+                case 'deepseek': return <DeepSeekIcon className={className} active={active} />;
+                case 'gemma': return <GemmaIcon className={className} active={active} />;
+                case 'meta': return <MetaIcon className={className} active={active} />;
+                case 'free': return <FreeOptionIcon className={className} active={active} />;
+                case 'perplexity': return <PerplexityIcon className={className} active={active} />;
+                case 'router': return <RouterIcon className={className} active={active} theme={theme} />;
+                default: return <GeminiIcon className={className} active={active} />;
+            }
+        };
+
+        /* ---------- IndexedDB ---------- */
+        const DB_NAME = 'GeminiChatDB', STORE_NAME = 'chats', DB_VERSION = 1;
+        const db = {
+            open: () => new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onupgradeneeded = (e) => {
+                    const inst = e.target.result;
+                    if (!inst.objectStoreNames.contains(STORE_NAME)) inst.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                };
+                request.onsuccess = (e) => resolve(e.target.result);
+                request.onerror = (e) => reject(e.target.error);
+            }),
+            saveChats: async (chats) => {
+                const database = await db.open();
+                return new Promise((resolve, reject) => {
+                    const tx = database.transaction(STORE_NAME, 'readwrite');
+                    tx.objectStore(STORE_NAME).put({ id: 'all_chats', data: chats });
+                    tx.oncomplete = () => resolve();
+                    tx.onerror = (e) => reject(e.target.error);
+                });
+            },
+            getChats: async () => {
+                const database = await db.open();
+                return new Promise((resolve, reject) => {
+                    const tx = database.transaction(STORE_NAME, 'readonly');
+                    const request = tx.objectStore(STORE_NAME).get('all_chats');
+                    request.onsuccess = () => resolve(request.result ? request.result.data : []);
+                    request.onerror = (e) => reject(e.target.error);
+                });
+            },
+            clear: async () => {
+                const database = await db.open();
+                return new Promise((resolve, reject) => {
+                    const tx = database.transaction(STORE_NAME, 'readwrite');
+                    tx.objectStore(STORE_NAME).clear();
+                    tx.oncomplete = () => resolve();
+                    tx.onerror = (e) => reject(e.target.error);
+                });
+            }
+        };
+
+        class ErrorBoundary extends Component {
+            constructor(props) { super(props); this.state = { hasError: false, error: null }; }
+            static getDerivedStateFromError(error) { return { hasError: true, error }; }
+            componentDidCatch(e, i) { console.error("React Error:", e, i); }
+            render() {
+                if (this.state.hasError) return (
+                    <div className="flex items-center justify-center h-screen flex-col text-red-400 p-4 text-center bg-[#131314]">
+                        <h2 className="text-2xl font-bold mb-2">Ошибка приложения</h2>
+                        <p className="text-sm opacity-80 mb-4">{String(this.state.error)}</p>
+                        <button onClick={() => { safeStorage.removeItem('gemini_language'); window.location.reload(); }} className="px-4 py-2 bg-[var(--accent-blue)] text-black rounded-full mt-4 font-semibold">Сбросить и перезагрузить</button>
+                    </div>
+                );
+                return this.props.children;
+            }
+        }
+
+        /* ---------- i18n ---------- */
+        const translations = {
+            ru: {
+                newChat:'Новый чат', newChatSafe:'Новая заметка', recent:'Недавние', settings:'Настройки',
+                officialSite:'Официальный сайт OpenRouter', greeting:'Привет', helpPrompt:'Как я могу помочь тебе сегодня?',
+                guest:'Гость', send:'Отправить', stop:'Остановить генерацию', inputPlaceholder:'Напиши свой запрос...',
+                yourName:'Твое имя', tabTitleSetting:'Название вкладки', tabTitlePlaceholder:'not ai', theme:'Тема',
+                language:'Язык', apiKey:'Ключ OpenRouter или код доступа', cancel:'Отмена', save:'Сохранить', close:'Закрыть',
+                welcome:'Добро пожаловать!', askName:'Как мне к тебе обращаться?', namePlaceholder:'Введи свое имя',
+                startChat:'Начать общение', emptyResponse:'Пустой ответ от сервера', requestError:'Ошибка запроса',
+                errorPrefix:'Ошибка: ', systemInstructions:'Системные инструкции',
+                sysInstDescription:'Укажи, как модель должна себя вести (например: "Ты опытный программист...").',
+                sysInstPlaceholder:'Напиши инструкции здесь...', balanceLabel:'Баланс:', clearHistory:'Очистить историю',
+                reqStopped:'⚠️ Запрос был остановлен.', settingsAI:'ИИ и поведение', settingsAppearance:'Внешний вид',
+                settingsData:'Данные аккаунта', attachPhoto:'Прикрепить фото',
+                noApiKey:'⚠️ Не указан API ключ. Откройте настройки и введите ключ OpenRouter.',
+                webSearch:'Веб-поиск', webSearchHint:'Модель сама решает, когда искать (Perplexity Sonar, до 2 запросов)',
+                searchingWeb:'Ищу в интернете', searchedWeb:'Веб-поиск', sources:'Источники',
+                searchLimitNote:'Достигнут лимит поисковых запросов (2).', searchError:'Ошибка поиска',
+                modelsLabel:'Модель', effort:'Глубина рассуждения', effortMedium:'Средняя', effortHigh:'Высокая',
+                effortLabels:{ none:'Выкл.', minimal:'Мин.', low:'Низкая', medium:'Средняя', high:'Высокая', xhigh:'Макс.' },
+                copyText:'Скопировать текст', copied:'Скопировано', viewReasoning:'Посмотреть размышление',
+                viewCost:'Посмотреть стоимость', reasoningTitle:'Размышление модели', noReasoning:'Модель не вернула reasoning-токены.',
+                searchLog:'Лог поисковых вызовов', noSearches:'Поиск не использовался.',
+                costTitle:'Стоимость ответа', costMain:'Основной ответ', costSearch:'Веб-поиск', costTotal:'Итого',
+                costShare:'Доля от остатка баланса', balanceLeft:'Остаток баланса', costPending:'Стоимость уточняется...',
+                visionUnsupported:'⚠️ **Ошибка:** выбранная модель не поддерживает изображения. Отправьте только текст или выберите другую модель.',
+                free:'Бесплатно', noTools:'Без поиска', modelsSynced:'Список моделей обновлён',
+                balanceByDevice:'Расход по устройствам', thisDevice:'это устройство',
+                extendedStats:'Какие модели используют', noModelData:'Пока нет данных по моделям.', yourColor:'Твой цвет — нажми, чтобы сменить',
+                apiKeyPlaceholder:'sk-or-... или код доступа',
+                apiKeyHint:'Вставь ключ OpenRouter или короткий код доступа.',
+                codeAccepted:'код принят', codeUnknown:'Такой код не найден - проверь написание.',
+                codeChecking:'Проверяю код...', ownKeyUsed:'Используется свой ключ OpenRouter.',
+                deviceRequests:'запросов', usedLabel:'Использовано', limitLabel:'Лимит ключа',
+                noDeviceData:'Пока никто не потратил ни цента через этот ключ.',
+                noLimitNote:'У ключа нет лимита — показаны доли расхода между устройствами.',
+                renameHint:'Имена устройств меняются в админке.'
+            },
+            da: {
+                newChat:'Ny chat', newChatSafe:'Ny note', recent:'Seneste', settings:'Indstillinger',
+                officialSite:'Officiel OpenRouter webside', greeting:'Hej', helpPrompt:'Hvordan kan jeg hjælpe dig i dag?',
+                guest:'Gæst', send:'Send', stop:'Stop generering', inputPlaceholder:'Indtast din besked...',
+                yourName:'Dit navn', tabTitleSetting:'Fanebladstitel', tabTitlePlaceholder:'not ai', theme:'Tema',
+                language:'Sprog', apiKey:'OpenRouter-nøgle eller adgangskode', cancel:'Annuller', save:'Gem', close:'Luk',
+                welcome:'Velkommen!', askName:'Hvad skal jeg kalde dig?', namePlaceholder:'Indtast dit navn',
+                startChat:'Start chat', emptyResponse:'Tomt svar fra serveren', requestError:'Anmodningsfejl',
+                errorPrefix:'Fejl: ', systemInstructions:'Systeminstruktioner',
+                sysInstDescription:'Angiv, hvordan modellen skal opføre sig (f.eks.: "Du er en erfaren programmør...").',
+                sysInstPlaceholder:'Skriv instruktioner her...', balanceLabel:'Saldo:', clearHistory:'Ryd historik',
+                reqStopped:'⚠️ Anmodningen blev stoppet.', settingsAI:'AI & Adfærd', settingsAppearance:'Udseende',
+                settingsData:'Kontodata', attachPhoto:'Vedhæft billede',
+                noApiKey:'⚠️ Ingen API-nøgle. Åbn indstillinger og indtast din OpenRouter-nøgle.',
+                webSearch:'Websøgning', webSearchHint:'Modellen beslutter selv (Perplexity Sonar, max 2 kald)',
+                searchingWeb:'Søger på nettet', searchedWeb:'Websøgning', sources:'Kilder',
+                searchLimitNote:'Grænsen for søgninger er nået (2).', searchError:'Søgefejl',
+                modelsLabel:'Model', effort:'Tænkedybde', effortMedium:'Mellem', effortHigh:'Høj',
+                effortLabels:{ none:'Fra', minimal:'Min.', low:'Lav', medium:'Mellem', high:'Høj', xhigh:'Maks.' },
+                copyText:'Kopier tekst', copied:'Kopieret', viewReasoning:'Se tænkning',
+                viewCost:'Se pris', reasoningTitle:'Modellens tænkning', noReasoning:'Modellen returnerede ingen reasoning-tokens.',
+                searchLog:'Log over søgekald', noSearches:'Søgning blev ikke brugt.',
+                costTitle:'Svarets pris', costMain:'Hovedsvar', costSearch:'Websøgning', costTotal:'I alt',
+                costShare:'Andel af resterende saldo', balanceLeft:'Resterende saldo', costPending:'Prisen beregnes...',
+                visionUnsupported:'⚠️ **Fejl:** den valgte model understøtter ikke billeder. Send kun tekst eller vælg en anden model.',
+                free:'Gratis', noTools:'Uden søgning', modelsSynced:'Modellisten er opdateret',
+                balanceByDevice:'Forbrug pr. enhed', thisDevice:'denne enhed',
+                extendedStats:'Hvilke modeller bruges', noModelData:'Ingen data om modeller endnu.', yourColor:'Din farve — klik for at skifte',
+                apiKeyPlaceholder:'sk-or-... eller adgangskode',
+                apiKeyHint:'Indsæt din OpenRouter-nøgle eller en kort adgangskode.',
+                codeAccepted:'kode accepteret', codeUnknown:'Koden findes ikke - tjek stavningen.',
+                codeChecking:'Tjekker koden...', ownKeyUsed:'Bruger din egen OpenRouter-nøgle.',
+                deviceRequests:'forespørgsler', usedLabel:'Brugt', limitLabel:'Nøglens grænse',
+                noDeviceData:'Ingen har brugt noget med denne nøgle endnu.',
+                noLimitNote:'Nøglen har ingen grænse — viser fordelingen mellem enheder.',
+                renameHint:'Enhedsnavne ændres i adminpanelet.'
+            }
+        };
+
+        const MarkdownRenderer = ({ content }) => {
+            const containerRef = useRef(null);
+            useEffect(() => {
+                if (!containerRef.current) return;
+                if (!content) { containerRef.current.innerHTML = ''; return; }
+                try {
+                    let html = marked.parse(String(content));
+                    const apply = (raw) => {
+                        const clean = window.DOMPurify ? window.DOMPurify.sanitize(raw, { ADD_ATTR: ['target'] }) : raw;
+                        containerRef.current.innerHTML = clean;
+                        containerRef.current.querySelectorAll('a').forEach(a => { a.target = '_blank'; a.rel = 'noopener noreferrer'; });
+                        if (window.renderMathInElement) {
+                            try {
+                                window.renderMathInElement(containerRef.current, {
+                                    delimiters: [
+                                        { left:'$$', right:'$$', display:true },
+                                        { left:'$', right:'$', display:false },
+                                        { left:'\\(', right:'\\)', display:false },
+                                        { left:'\\[', right:'\\]', display:true }
+                                    ], throwOnError:false
+                                });
+                            } catch(e) {}
+                        }
+                    };
+                    if (html instanceof Promise) html.then(apply); else apply(html);
+                } catch { containerRef.current.innerText = String(content); }
+            }, [content]);
+            return <div ref={containerRef} className="markdown-body text-[15px] border-none leading-7" />;
+        };
+
+        const BotIcon = ({ className }) => (
+            <svg className={className} viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/>
+                <line x1="8" y1="16" x2="8" y2="16.01"/><line x1="16" y1="16" x2="16" y2="16.01"/>
+            </svg>
+        );
+
+        let msgCounter = 0;
+        const genMsgId = () => `${Date.now()}_${msgCounter++}`;
+        const fmt$ = (v) => `$${Number(v || 0).toFixed(6)}`;
+        const plural = (n, one, few, many) => {
+            const a = Math.abs(n) % 100, b = a % 10;
+            if (a > 10 && a < 20) return many;
+            if (b > 1 && b < 5) return few;
+            if (b === 1) return one;
+            return many;
+        };
+        const hostOf = (u) => { try { return new URL(u).hostname.replace(/^www\./,''); } catch { return u; } };
+
+        /* ---------- Плашка веб-поиска (Claude-style) ---------- */
+        const SearchPanel = ({ searches, open, running, onToggle, t }) => {
+            if (!searches || !searches.length) return null;
+            const label = running ? t.searchingWeb : t.searchedWeb;
+            return (
+                <div className="mb-3 rounded-xl border border-[var(--border-color)] bg-[var(--search-bg)] overflow-hidden animate-slide-up">
+                    <button onClick={onToggle} className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[var(--hover-bg)] transition-colors">
+                        <Icon name="globe" className={`w-4 h-4 text-[var(--accent-blue)] ${running ? 'pulse-dot' : ''}`} />
+                        <span className="text-xs font-medium text-[var(--text-primary)]">{label}</span>
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--cost-bg)] text-[var(--text-secondary)]">{searches.length}/{MAX_SEARCHES}</span>
+                        {running && <span className="text-[11px] text-[var(--text-secondary)] truncate max-w-[220px]">{searches[searches.length-1].query}</span>}
+                        <Icon name={open ? 'chevron-up' : 'chevron-down'} className="w-3.5 h-3.5 ml-auto text-[var(--text-secondary)]" />
+                    </button>
+                    {open && (
+                        <div className="px-3 pb-3 pt-1 space-y-3 border-t border-[var(--border-color)]">
+                            {searches.map((s) => (
+                                <div key={s.id} className="text-xs">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Icon name={s.status === 'running' ? 'loader' : (s.status === 'error' ? 'alert-triangle' : 'search')}
+                                              className={`w-3.5 h-3.5 ${s.status === 'running' ? 'text-[var(--accent-blue)] pulse-dot' : (s.status === 'error' ? 'text-red-400' : 'text-[var(--text-secondary)]')}`} />
+                                        <span className="font-medium text-[var(--text-primary)] break-words">{s.query || '—'}</span>
+                                    </div>
+                                    {s.status === 'error' && <div className="text-red-400 pl-5">{t.searchError}: {s.error}</div>}
+                                    {s.summary && <div className="pl-5 text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap max-h-40 overflow-y-auto scrollbar-slim">{s.summary}</div>}
+                                    {s.citations && s.citations.length > 0 && (
+                                        <div className="pl-5 mt-1.5 flex flex-wrap gap-1.5">
+                                            {s.citations.slice(0, 8).map((c, i) => (
+                                                <a key={i} href={c} target="_blank" rel="noopener noreferrer"
+                                                   className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--cost-bg)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--accent-blue)] transition-colors">
+                                                    {i+1}. {hostOf(c)}
+                                                </a>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        /* ---------- Меню ответа (три точки) ---------- */
+        const MessageActions = ({ msg, t, onReasoning, onCost }) => {
+            const [open, setOpen] = useState(false);
+            const [copied, setCopied] = useState(false);
+            const ref = useRef(null);
+            useEffect(() => {
+                if (!open) return;
+                const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+                document.addEventListener('mousedown', h);
+                return () => document.removeEventListener('mousedown', h);
+            }, [open]);
+
+            const copy = async () => {
+                const text = msg.text || '';
+                try { await navigator.clipboard.writeText(text); }
+                catch {
+                    const ta = document.createElement('textarea');
+                    ta.value = text; document.body.appendChild(ta); ta.select();
+                    try { document.execCommand('copy'); } catch(e) {}
+                    ta.remove();
+                }
+                setCopied(true); setOpen(false);
+                setTimeout(() => setCopied(false), 1600);
+            };
+
+            return (
+                <div className="mt-2 flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                    <div className="relative" ref={ref}>
+                        <button onClick={() => setOpen(!open)} className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-[var(--hover-bg)] text-[var(--text-secondary)] transition-colors" title="•••">
+                            <Icon name="more-horizontal" className="w-4 h-4" />
+                        </button>
+                        {open && (
+                            <div className="absolute left-0 bottom-full mb-2 w-60 bg-[var(--tool-menu-bg)] border border-[var(--border-color)] rounded-xl shadow-2xl p-1.5 z-40 animate-slide-up">
+                                <button onClick={copy} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-sm text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-colors">
+                                    <Icon name="copy" className="w-4 h-4 text-[var(--text-secondary)]" />{t.copyText}
+                                </button>
+                                <button onClick={() => { setOpen(false); onReasoning(); }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-sm text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-colors">
+                                    <Icon name="brain" className="w-4 h-4 text-[var(--text-secondary)]" />{t.viewReasoning}
+                                </button>
+                                <button onClick={() => { setOpen(false); onCost(); }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-sm text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-colors">
+                                    <Icon name="wallet" className="w-4 h-4 text-[var(--text-secondary)]" />{t.viewCost}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                    {copied && <span className="text-[10px] text-[var(--accent-blue)]">{t.copied}</span>}
+                </div>
+            );
+        };
+
+        const Modal = ({ title, onClose, children, footer }) => (
+            <div className="fixed inset-0 bg-black/60 z-[120] flex items-center justify-center p-4" onClick={onClose}>
+                <div className="bg-[var(--bg-surface)] rounded-2xl w-full max-w-2xl border border-[var(--border-color)] shadow-2xl flex flex-col max-h-[85vh]" onClick={(e) => e.stopPropagation()}>
+                    <div className="p-5 border-b border-[var(--border-color)] flex justify-between items-center">
+                        <h2 className="text-lg font-bold">{title}</h2>
+                        <button onClick={onClose} className="p-1 rounded-full hover:bg-[var(--hover-bg)] text-[var(--text-secondary)]"><Icon name="x" className="w-5 h-5" /></button>
+                    </div>
+                    <div className="p-5 overflow-y-auto scrollbar-slim">{children}</div>
+                    {footer && <div className="p-5 border-t border-[var(--border-color)] flex justify-end gap-3">{footer}</div>}
+                </div>
+            </div>
+        );
+
+        /* ================== APP ================== */
+        const App = () => {
+            const [apiKey, setApiKey] = useState(safeStorage.getItem('gemini_user_api_key') || '');
+            const [theme, setTheme] = useState(safeStorage.getItem('gemini_theme') || 'dark');
+            const [language, setLanguage] = useState(safeStorage.getItem('gemini_language') || 'da');
+            const [nickname, setNickname] = useState(safeStorage.getItem('gemini_nickname') || '');
+            const [tabTitle, setTabTitle] = useState(safeStorage.getItem('gemini_tab_title') || 'not ai');
+            const [systemInstruction, setSystemInstruction] = useState(safeStorage.getItem('gemini_system_instruction') || '');
+            const [safeMode, setSafeMode] = useState(safeStorage.getItem('safe_mode') === '1');
+            const [balanceData, setBalanceData] = useState(null);
+            const [usageDevices, setUsageDevices] = useState([]);
+            const [keyHash, setKeyHash] = useState(null);
+            const [isBalanceOpen, setIsBalanceOpen] = useState(false);
+            const [statsOpen, setStatsOpen] = useState(false);
+            const keyHashRef = useRef(null);
+            const [keyInfo, setKeyInfo] = useState({ kind: 'none', label: '' });
+            const [myTag, setMyTag] = useState(null);
+            const colorTimerRef = useRef(null);
+            const myTagRef = useRef(null);
+
+            /* «внешний вид» обёртки — те же настройки, что в панели Appearance */
+            const [wikiText, setWikiText] = useState(safeStorage.getItem('wk_text') || 'standard');
+            const [wikiWidth, setWikiWidth] = useState(safeStorage.getItem('wk_width') || 'standard');
+            const [wikiColor, setWikiColor] = useState(safeStorage.getItem('wk_color') || 'light');
+            const [wikiToc, setWikiToc] = useState(safeStorage.getItem('wk_toc') !== '0');
+            const [wikiAppear, setWikiAppear] = useState(safeStorage.getItem('wk_app') !== '0');
+            const [wikiMenu, setWikiMenu] = useState(false);
+            useEffect(() => { safeStorage.setItem('safe_mode', safeMode ? '1' : '0'); }, [safeMode]);
+            const wikiDark = useMemo(() => {
+                if (wikiColor === 'dark') return true;
+                if (wikiColor === 'light') return false;
+                try { return window.matchMedia('(prefers-color-scheme: dark)').matches; } catch (e) { return false; }
+            }, [wikiColor]);
+            useEffect(() => {
+                safeStorage.setItem('wk_text', wikiText);
+                safeStorage.setItem('wk_width', wikiWidth);
+                safeStorage.setItem('wk_color', wikiColor);
+                safeStorage.setItem('wk_toc', wikiToc ? '1' : '0');
+                safeStorage.setItem('wk_app', wikiAppear ? '1' : '0');
+            }, [wikiText, wikiWidth, wikiColor, wikiToc, wikiAppear]);
+
+            /* модели из KV */
+            const [models, setModels] = useState(() => {
+                try {
+                    const cached = JSON.parse(safeStorage.getItem('models_cache_v1') || 'null');
+                    if (Array.isArray(cached) && cached.length) return cached.map(normalizeModel);
+                } catch(e) {}
+                return DEFAULT_MODELS;
+            });
+            const [modelId, setModelId] = useState(safeStorage.getItem('app_model_id') || DEFAULT_MODELS[0].id);
+            const [reasoningEffort, setReasoningEffort] = useState(safeStorage.getItem('app_reasoning_effort') || 'medium');
+            const [webSearch, setWebSearch] = useState(safeStorage.getItem('app_web_search') !== '0');
+            const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
+
+            const [chats, setChats] = useState([]);
+            const [isChatsLoaded, setIsChatsLoaded] = useState(false);
+            const [loadError, setLoadError] = useState(false);
+            const [activeChatId, setActiveChatId] = useState(null);
+            const [input, setInput] = useState('');
+            const [attachments, setAttachments] = useState([]);
+            const [isLoading, setIsLoading] = useState(false);
+            const [isGenerating, setIsGenerating] = useState(false);
+            const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+            const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+            const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+            const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
+            const [isMemoryModalOpen, setIsMemoryModalOpen] = useState(false);
+            const [reasoningModalMsg, setReasoningModalMsg] = useState(null);
+            const [costModalMsg, setCostModalMsg] = useState(null);
+
+            const [tempTheme, setTempTheme] = useState(theme);
+            const [tempNickname, setTempNickname] = useState(nickname);
+            const [tempTabTitle, setTempTabTitle] = useState(tabTitle);
+            const [tempApiKey, setTempApiKey] = useState(apiKey);
+            const [tempSystemInstruction, setTempSystemInstruction] = useState('');
+
+            const textareaRef = useRef(null);
+            const abortControllerRef = useRef(null);
+            const isBusyRef = useRef(false);
+            const chatContainerRef = useRef(null);
+            const isUserScrolledUp = useRef(false);
+            const lastScrollTopRef = useRef(0);
+            const apiKeyRef = useRef(apiKey);
+            useEffect(() => { apiKeyRef.current = apiKey; }, [apiKey]);
+
+            const activeLang = translations[language] ? language : 'ru';
+            const t = translations[activeLang];
+
+            const currentModel = useMemo(
+                () => models.find(m => m.id === modelId) || models[0] || DEFAULT_MODELS[0],
+                [models, modelId]
+            );
+            const effectiveEffort = useMemo(() => {
+                if (!currentModel.reasoning) return null;
+                const opts = currentModel.reasoningOptions || [];
+                const def = currentModel.reasoning.effort;
+                if (!opts.length) return def;
+                if (opts.includes(reasoningEffort)) return reasoningEffort;   // выбор пользователя
+                return opts.includes(def) ? def : opts[0];                    // иначе дефолт из админки
+            }, [currentModel, reasoningEffort]);
+
+            /* ---- синхронизация списка моделей ---- */
+            useEffect(() => {
+                let cancelled = false;
+                (async () => {
+                    try {
+                        const res = await fetch(`${API_BASE}/models`, { cache: 'no-store' });
+                        if (!res.ok) return;
+                        const data = await res.json();
+                        const list = Array.isArray(data) ? data : (data && data.models);
+                        if (!Array.isArray(list) || !list.length || cancelled) return;
+                        const norm = list.map(normalizeModel).filter(m => m.id);
+                        setModels(norm);
+                        safeStorage.setItem('models_cache_v1', JSON.stringify(norm));
+                    } catch (e) { console.warn('Models sync failed:', e); }
+                })();
+                return () => { cancelled = true; };
+            }, []);
+
+            useEffect(() => {
+                if (models.length && !models.some(m => m.id === modelId)) setModelId(models[0].id);
+            }, [models]);
+
+            useEffect(() => { safeStorage.setItem('app_model_id', modelId); }, [modelId]);
+            useEffect(() => { safeStorage.setItem('app_reasoning_effort', reasoningEffort); }, [reasoningEffort]);
+            useEffect(() => { safeStorage.setItem('app_web_search', webSearch ? '1' : '0'); }, [webSearch]);
+
+            useEffect(() => {
+                document.documentElement.setAttribute('data-theme', safeMode ? (wikiDark ? 'dark' : 'light') : theme);
+                safeStorage.setItem('gemini_theme', theme);
+            }, [theme, safeMode, wikiDark]);
+            useEffect(() => {
+                safeStorage.setItem('gemini_language', language);
+                document.documentElement.lang = language;
+            }, [language]);
+            useEffect(() => {
+                const storedNick = safeStorage.getItem('gemini_nickname');
+                if (!storedNick) setIsWelcomeModalOpen(true); else setNickname(storedNick);
+            }, []);
+            useEffect(() => {
+                const custom = (tabTitle || '').trim();
+                document.title = safeMode ? (custom && custom !== 'not ai' ? custom : 'Wikipedia') : (custom || 'not ai');
+                let link = document.querySelector("link[rel~='icon']");
+                if (safeMode) {
+                    if (!link) {
+                        link = document.createElement('link');
+                        link.rel = 'icon';
+                        document.head.appendChild(link);
+                    }
+                    link.href = WIKI_FAVICON;
+                } else if (link) {
+                    link.remove();
+                }
+            }, [safeMode, tabTitle]);
+            useEffect(() => {
+                const timer = setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 60);
+                return () => clearTimeout(timer);
+            }, [isSettingsOpen, isMemoryModalOpen, reasoningModalMsg, costModalMsg, isModelMenuOpen]);
+
+            const fetchBalance = async () => {
+                const key = apiKeyRef.current;
+                if (!key) { setBalanceData(null); return; }
+                try {
+                    const res = await fetch(`${API_BASE}/v1/auth/key`, { headers: { 'Authorization': `Bearer ${key}` } });
+                    if (!res.ok) { setBalanceData(null); return; }
+                    const data = await res.json();
+                    if (data && data.data) {
+                        const { limit, usage } = data.data;
+                        setBalanceData({ limit: limit !== null ? Number(limit) : 0, usage: usage !== null ? Number(usage) : 0 });
+                    }
+                } catch (e) { setBalanceData(null); }
+            };
+            useEffect(() => { fetchBalance(); }, [apiKey]);
+
+            /* догоняем траты, оставшиеся с прошлых сессий */
+            const recoverPending = async () => {
+                const key = apiKeyRef.current;
+                const h = keyHashRef.current;
+                if (!h) return;
+                usageReporter.flush();
+                if (!key || !genQueue.list.length) return;
+                for (const g of [...genQueue.list]) {
+                    /* сутки не получилось — скорее всего уже не получится */
+                    if (Date.now() - (g.at || 0) > 864e5) { genQueue.remove(g.id); continue; }
+                    if (g.keyHash !== h) continue;
+                    /* обычным опросом: он сам повторяет попытки и чистит очередь */
+                    pollCost(g.id, null, null, g.reqInc || 0, g.modelId || '');
+                }
+            };
+
+            const loadUsage = async (hash) => {
+                const h = hash || keyHashRef.current;
+                if (!h) { setUsageDevices([]); return; }
+                try {
+                    const res = await fetch(`${API_BASE}/usage?key=${h}`, { cache: 'no-store' });
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    if (Array.isArray(data.devices)) setUsageDevices(data.devices);
+                } catch (e) {}
+            };
+            useEffect(() => {
+                let cancelled = false;
+                (async () => {
+                    const raw = (apiKey || '').trim();
+                    if (!raw) {
+                        keyHashRef.current = null; usageReporter.keyHash = null;
+                        setKeyHash(null); setKeyInfo({ kind: 'none', label: '' });
+                        setUsageDevices([]);
+                        return;
+                    }
+                    /* «sk-…» — обычный ключ, всё остальное считаем кодом доступа */
+                    if (/^sk-/i.test(raw)) {
+                        const h = await hashApiKey(raw);
+                        if (cancelled) return;
+                        keyHashRef.current = h; usageReporter.keyHash = h;
+                        setKeyHash(h); setKeyInfo({ kind: 'key', label: '' });
+                        loadUsage(h); recoverPending();
+                        return;
+                    }
+                    setKeyInfo({ kind: 'checking', label: '' });
+                    let info = { kind: 'bad', label: '' }, h = null;
+                    try {
+                        const res = await fetch(`${API_BASE}/key/resolve?code=${encodeURIComponent(raw)}`, { cache: 'no-store' });
+                        const data = await res.json();
+                        if (res.ok && data.ok) { h = data.keyId; info = { kind: 'code', label: data.label || '', guest: !!data.guest }; }
+                    } catch (e) {
+                        info = { kind: 'offline', label: '' };
+                    }
+                    if (cancelled) return;
+                    keyHashRef.current = h; usageReporter.keyHash = h;
+                    setKeyHash(h); setKeyInfo(info);
+                    loadUsage(h); recoverPending();
+                })();
+                return () => { cancelled = true; };
+            }, [apiKey]);
+            useEffect(() => {
+                let cancelled = false;
+                (async () => {
+                    const tag = keyHash ? await sha16(keyHash + ':' + deviceId) : null;
+                    if (!cancelled) { myTagRef.current = tag; setMyTag(tag); }
+                })();
+                return () => { cancelled = true; };
+            }, [keyHash]);
+
+            /* пришёл без ключа — сайт выдаёт гостевой код владельца */
+            useEffect(() => {
+                if ((apiKey || '').trim()) return;
+                let cancelled = false;
+                (async () => {
+                    try {
+                        const res = await fetch(`${API_BASE}/key/guest`, { cache: 'no-store' });
+                        if (!res.ok) return;
+                        const d = await res.json();
+                        if (!d.ok || !d.code || cancelled) return;
+                        setApiKey(d.code);
+                        safeStorage.setItem('gemini_user_api_key', d.code);
+                        apiKeyRef.current = d.code;
+                    } catch (e) {}
+                })();
+                return () => { cancelled = true; };
+            }, [apiKey]);
+
+            /* журнал гостевых диалогов: воркер примет запись только для гостевого кода */
+            const logGuest = (q, a, modelId) => {
+                const code = (apiKeyRef.current || '').trim();
+                if (!code || !(q || a)) return;
+                try {
+                    fetch(`${API_BASE}/guestlog`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ code, q, a, model: modelId || '', tag: myTagRef.current || '' })
+                    });
+                } catch (e) {}
+            };
+
+            /* свой цвет меняется без админки: воркер требует сырой id устройства,
+               а он есть только у владельца */
+            const changeMyColor = (color) => {
+                if (!keyHashRef.current || !myTag) return;
+                setUsageDevices(prev => prev.map(d => (d.tag === myTag ? { ...d, color } : d)));
+                clearTimeout(colorTimerRef.current);
+                colorTimerRef.current = setTimeout(async () => {
+                    try {
+                        await fetch(`${API_BASE}/usage/color`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ key: keyHashRef.current, device: deviceId, color })
+                        });
+                    } catch (e) {}
+                    loadUsage();
+                }, 400);
+            };
+
+            useEffect(() => {
+                usageReporter.onFlush = () => loadUsage();
+                return () => { usageReporter.onFlush = null; };
+            }, [keyHash]);
+
+            useEffect(() => {
+                const loadChats = async () => {
+                    try {
+                        const saved = await db.getChats();
+                        if (!saved || saved.length === 0) {
+                            const legacy = safeStorage.getItem('gemini_chats_v4');
+                            if (legacy) {
+                                const parsed = JSON.parse(legacy);
+                                setChats(parsed);
+                                if (parsed.length) setActiveChatId(parsed[0].id); else createNewChat();
+                            } else createNewChat();
+                        } else {
+                            setChats(saved);
+                            if (saved.length) setActiveChatId(saved[0].id); else createNewChat();
+                        }
+                    } catch (e) { setLoadError(true); createNewChat(); }
+                    finally { setIsChatsLoaded(true); }
+                };
+                loadChats();
+            }, []);
+
+            useEffect(() => {
+                if (isChatsLoaded && !loadError) {
+                    const timer = setTimeout(() => { db.saveChats(chats).catch(e => console.error(e)); }, 500);
+                    return () => clearTimeout(timer);
+                }
+            }, [chats, isChatsLoaded, loadError]);
+
+            useEffect(() => {
+                if (!isUserScrolledUp.current && chatContainerRef.current)
+                    chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+            }, [chats, isLoading]);
+
+            useEffect(() => {
+                if (textareaRef.current) {
+                    textareaRef.current.style.height = 'auto';
+                    textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+                    if (!input) textareaRef.current.style.height = 'auto';
+                }
+            }, [input]);
+
+            const activeChat = useMemo(() => chats.find(c => c.id === activeChatId), [chats, activeChatId]);
+
+            const saveNickname = (name) => {
+                const finalName = name.trim() || t.guest;
+                setNickname(finalName); safeStorage.setItem('gemini_nickname', finalName);
+                setIsWelcomeModalOpen(false);
+            };
+            const openSettings = () => {
+                setTempTheme(theme); setTempNickname(nickname);
+                setTempTabTitle(tabTitle); setTempApiKey(apiKey); setIsSettingsOpen(true);
+            };
+            const saveSettings = () => {
+                const finalName = tempNickname.trim() || t.guest;
+                const finalTab = tempTabTitle.trim() || t.tabTitlePlaceholder;
+                setTheme(tempTheme); setNickname(finalName);
+                setTabTitle(finalTab); setApiKey(tempApiKey);
+                safeStorage.setItem('gemini_nickname', finalName);
+                safeStorage.setItem('gemini_tab_title', finalTab);
+                safeStorage.setItem('gemini_user_api_key', tempApiKey);
+                setIsSettingsOpen(false);
+                apiKeyRef.current = tempApiKey;
+                fetchBalance();
+            };
+            const clearAllHistory = async () => {
+                const msg = language === 'ru' ? "Удалить ВСЮ историю из базы данных? Это нельзя отменить." : "Slet hele din historik?";
+                if (confirm(msg)) {
+                    await db.clear(); safeStorage.removeItem('gemini_chats_v4');
+                    setChats([]); createNewChat(); setIsSettingsOpen(false);
+                }
+            };
+            const openMemoryModal = () => { setTempSystemInstruction(systemInstruction); setIsSettingsOpen(false); setIsMemoryModalOpen(true); };
+            const saveMemory = () => {
+                setSystemInstruction(tempSystemInstruction);
+                safeStorage.setItem('gemini_system_instruction', tempSystemInstruction);
+                setIsMemoryModalOpen(false);
+            };
+            const createNewChat = () => {
+                const cur = chats.find(c => c.id === activeChatId);
+                if (cur && cur.messages.length === 0) { setIsSidebarOpen(false); setInput(''); return; }
+                const newChat = { id: Date.now().toString(), title: t.newChat, messages: [], timestamp: Date.now() };
+                setChats(prev => [newChat, ...prev]); setActiveChatId(newChat.id); setIsSidebarOpen(false);
+            };
+            const handleSwitchChat = (targetId) => {
+                if (activeChatId === targetId) return;
+                const cur = chats.find(c => c.id === activeChatId);
+                if (cur && cur.messages.length === 0) setChats(prev => prev.filter(c => c.id !== activeChatId));
+                setActiveChatId(targetId); setIsSidebarOpen(false);
+            };
+            const deleteChat = (e, id) => {
+                e.stopPropagation();
+                const filtered = chats.filter(c => c.id !== id);
+                setChats(filtered);
+                if (activeChatId === id) { if (filtered.length) setActiveChatId(filtered[0].id); else createNewChat(); }
+            };
+            const handleStopGeneration = () => {
+                if (abortControllerRef.current) { abortControllerRef.current.abort(); setIsLoading(false); }
+            };
+            const handleChatScroll = () => {
+                if (!chatContainerRef.current) return;
+                const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+                const dist = scrollHeight - scrollTop - clientHeight;
+                const up = scrollTop < lastScrollTopRef.current;
+                lastScrollTopRef.current = scrollTop;
+                if (up && dist > 80) isUserScrolledUp.current = true;
+                else if (dist < 40) isUserScrolledUp.current = false;
+            };
+            const handlePaste = (e) => {
+                const items = e.clipboardData?.items; if (!items) return;
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].type.indexOf('image') !== -1) {
+                        const file = items[i].getAsFile();
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (ev) => setAttachments(prev => [...prev, { base64: ev.target.result, name: file.name || 'image.png' }]);
+                            reader.readAsDataURL(file);
+                        }
+                    }
+                }
+            };
+            const handleFileChange = (e) => {
+                Array.from(e.target.files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => setAttachments(prev => [...prev, { base64: ev.target.result, name: file.name }]);
+                    reader.readAsDataURL(file);
+                });
+                e.target.value = null;
+            };
+
+            const generateChatTitle = async (chatId, userMessage) => {
+                if (!apiKeyRef.current) return;
+                try {
+                    const prompt = `Generate a very short, concise title (max 3-5 words) in the same language as the message. No quotes. Message: "${userMessage.slice(0,500)}"`;
+                    const res = await fetch(`${API_BASE}/v1/chat/completions`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${apiKeyRef.current}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ model: (models.find(m => !(m.pool && m.pool.length)) || {}).id || models[0]?.pool?.[0] || 'google/gemini-3.7-flash', messages: [{ role: 'user', content: prompt }], max_tokens: 40 })
+                    });
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    const title = data.choices?.[0]?.message?.content?.trim()?.replace(/^["']|["']$/g, '');
+                    if (title) setChats(prev => prev.map(c => c.id === chatId ? { ...c, title } : c));
+                } catch (e) {}
+            };
+
+            const pollCost = async (genId, chatId, messageId, reqInc, modelId) => {
+                /* если стоимость не успеет прийти (закрыли вкладку, удалили чат) —
+                   доберём её при следующем запуске */
+                genQueue.add(genId, keyHashRef.current, reqInc, modelId);
+                let attempt = 0;
+                const check = async () => {
+                    if (attempt >= 30) return;
+                    try {
+                        const res = await fetch(`${API_BASE}/v1/generation?id=${genId}`, { headers: { 'Authorization': `Bearer ${apiKeyRef.current}` } });
+                        if (res.ok) {
+                            const data = await res.json();
+                            const cost = data.data?.total_cost;
+                            if (cost !== undefined && cost !== null && cost > 0) {
+                                setChats(prev => prev.map(c => c.id === chatId
+                                    ? { ...c, messages: c.messages.map(m => m.id === messageId ? { ...m, cost } : m) } : c));
+                                genQueue.remove(genId);
+                                usageReporter.add(keyHashRef.current, cost, reqInc || 0, modelId);
+                                return;
+                            }
+                        }
+                    } catch (e) {}
+                    attempt++; setTimeout(check, 1200);
+                };
+                check();
+            };
+
+            /* ---------- Perplexity Sonar ---------- */
+            const runSonarSearch = async (query, signal) => {
+                const res = await fetch(`${API_BASE}/v1/chat/completions`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${apiKeyRef.current}`, 'Content-Type': 'application/json', 'X-Title': 'not ai' },
+                    body: JSON.stringify({
+                        model: SEARCH_MODEL,
+                        messages: [
+                            { role: 'system', content: 'Ты — поисковый модуль. Дай сжатую фактическую сводку по запросу: только факты, числа, даты, имена и ссылки на источники. Без вступлений и рассуждений.' },
+                            { role: 'user', content: query }
+                        ],
+                        max_tokens: 900,
+                        usage: { include: true }
+                    }),
+                    signal
+                });
+                if (!res.ok) {
+                    let m = `HTTP ${res.status}`;
+                    try { const err = await res.json(); m = err.error?.message || m; } catch {}
+                    throw new Error(m);
+                }
+                const data = await res.json();
+                const ann = (data.choices?.[0]?.message?.annotations || [])
+                    .map(a => a?.url_citation?.url).filter(Boolean);
+                return {
+                    content: data.choices?.[0]?.message?.content || '',
+                    citations: (Array.isArray(data.citations) && data.citations.length ? data.citations : ann).map(String),
+                    cost: Number(data.usage?.cost || 0)
+                };
+            };
+
+            /* ---------- ОТПРАВКА СООБЩЕНИЯ ---------- */
+            const sendMessage = async () => {
+                /* пока предыдущий ответ не дописан, новую отправку не принимаем */
+                if (isBusyRef.current) return;
+
+                /* переключение языка: такой запрос в модель не уходит */
+                const cmd = input.trim().toLowerCase().replace(/[.!?]+$/, '');
+                if (cmd === 'русский язык' || cmd === 'dansk sprog') {
+                    const lang = cmd === 'русский язык' ? 'ru' : 'da';
+                    setLanguage(lang);
+                    safeStorage.setItem('gemini_language', lang);
+                    setInput('');
+                    return;
+                }
+
+                if (!input.trim() && attachments.length === 0) return;
+                const model = currentModel;
+
+                if (!apiKey) {
+                    setChats(prev => prev.map(c => c.id === activeChatId
+                        ? { ...c, messages: [...c.messages, { id: genMsgId(), role: 'model', text: t.noApiKey, isError: true }] } : c));
+                    return;
+                }
+
+                isUserScrolledUp.current = false; lastScrollTopRef.current = 0;
+                const userText = input;
+                const activeAttachments = [...attachments];
+                const isFirstMessage = (activeChat?.messages.length || 0) === 0;
+                const currentChatId = activeChatId;
+                setInput(''); setAttachments([]);
+
+                if (activeAttachments.length > 0 && model.vision === false) {
+                    setChats(prev => prev.map(c => c.id === currentChatId ? {
+                        ...c,
+                        title: c.messages.length === 0 ? (userText.slice(0,30) || 'Image') : c.title,
+                        messages: [...c.messages,
+                            { id: genMsgId(), role: 'user', text: userText, attachments: activeAttachments },
+                            { id: genMsgId(), role: 'model', text: t.visionUnsupported, isError: true, icon: model.icon, modelName: model.name }]
+                    } : c));
+                    return;
+                }
+
+                isBusyRef.current = true;
+                setIsLoading(true); setIsGenerating(true);
+                const modelMsgId = genMsgId();
+
+                setChats(prev => prev.map(c => c.id === currentChatId ? {
+                    ...c,
+                    title: c.messages.length === 0 ? (userText.slice(0,30) || "Image upload") : c.title,
+                    messages: [...c.messages,
+                        { id: genMsgId(), role: 'user', text: userText, attachments: activeAttachments },
+                        { id: modelMsgId, role: 'model', text: '', isThinking: true, icon: model.icon, modelName: model.name,
+                          modelId: model.id, effort: effectiveEffort, reasoning: '', searches: [], searchOpen: true,
+                          cost: 0, searchCost: 0, usage: null, actualModel: '' }]
+                } : c));
+
+                if (isFirstMessage && userText) generateChatTitle(currentChatId, userText);
+
+                const controller = new AbortController();
+                abortControllerRef.current = controller;
+
+                const patch = (updater) => setChats(prev => prev.map(c => c.id === currentChatId
+                    ? { ...c, messages: c.messages.map(m => m.id === modelMsgId ? updater(m) : m) } : c));
+
+                let fullText = "", displayed = "", reasoningAcc = "", lastReasoningLen = -1;
+                let streamFinished = false, finalized = false, reported = false;
+                let mainCost = 0, searchCost = 0, lastGenId = null;
+                let raceWinner = null;
+
+                /* учёт вызывается сразу по завершении потока: он не должен ждать
+                   отрисовки, которая во вкладке в фоне может не тикать */
+                const reportSpend = () => {
+                    if (reported) return;
+                    reported = true;
+                    const spent = mainCost + searchCost;
+                    if (spent > 0) usageReporter.add(keyHashRef.current, spent, 1, model.id);
+                    /* стоимость иногда приходит только из /generation — запрос засчитаем там */
+                    if (mainCost === 0 && lastGenId && !model.free) pollCost(lastGenId, currentChatId, modelMsgId, spent > 0 ? 0 : 1, model.id);
+                    fetchBalance();
+                    /* журнал ведётся только для гостевого кода */
+                    if (keyInfo.guest) logGuest(userText, fullText, model.id);
+                };
+
+                const finalize = () => {
+                    if (finalized) return;
+                    finalized = true;
+                    isBusyRef.current = false;
+                    setIsGenerating(false); setIsLoading(false);
+                    if (abortControllerRef.current === controller) abortControllerRef.current = null;
+                    patch(m => ({ ...m, text: fullText || m.text, reasoning: reasoningAcc, searchOpen: false, isThinking: false }));
+                    reportSpend();
+                };
+
+                const updateUI = () => {
+                    if (displayed.length < fullText.length) {
+                        const diff = fullText.length - displayed.length;
+                        displayed = fullText.slice(0, displayed.length + Math.max(1, Math.floor(diff / 3)));
+                        lastReasoningLen = reasoningAcc.length;
+                        patch(m => ({ ...m, text: displayed, reasoning: reasoningAcc, isThinking: false }));
+                    } else if (reasoningAcc.length !== lastReasoningLen) {
+                        lastReasoningLen = reasoningAcc.length;
+                        patch(m => ({ ...m, reasoning: reasoningAcc }));
+                    }
+                    if (!streamFinished || displayed.length < fullText.length) requestAnimationFrame(updateUI);
+                    else finalize();
+                };
+                requestAnimationFrame(updateUI);
+
+                /* один проход стрима */
+                const streamTurn = async (messages, allowTools) => {
+                    const body = {
+                        model: model.id,
+                        messages,
+                        max_tokens: model.maxTokens || 8192,
+                        stream: true,
+                        usage: { include: true }
+                    };
+                    if (model.temperature !== null && model.temperature !== undefined) body.temperature = model.temperature;
+                    if (model.provider) body.provider = model.provider;
+                    if (model.reasoning && effectiveEffort) body.reasoning = { effort: effectiveEffort };
+                    if (allowTools) { body.tools = [SEARCH_TOOL]; body.tool_choice = 'auto'; }
+
+                    const url = `${API_BASE}/v1/chat/completions`;
+                    const init = {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${apiKeyRef.current}`,
+                            'HTTP-Referer': window.location.href,
+                            'X-Title': 'not ai',
+                            'Content-Type': 'application/json'
+                        }
+                    };
+                    let res;
+                    if (!raceWinner && model.pool && model.pool.length > 1) {
+                        const race = await raceModels({
+                            url, init, body, pool: model.pool, windowMs: model.raceWindow, signal: controller.signal,
+                            /* проигравшие платные успели что-то написать — их стоимость тоже на этом устройстве */
+                            onLoser: (genId, id) => {
+                                const known = models.find(x => x.id === id);
+                                if (/:free$/.test(id) || (known && known.free)) return;
+                                pollCost(genId, null, null, 0, model.id);
+                            }
+                        });
+                        res = race.res;
+                        if (race.modelId) raceWinner = race.modelId;
+                    } else {
+                        res = await fetch(url, { ...init, body: JSON.stringify(raceWinner ? { ...body, model: raceWinner } : body), signal: controller.signal });
+                    }
+                    if (!res.ok) {
+                        let errMsg = t.requestError;
+                        try { const err = await res.json(); errMsg = err.error?.message || errMsg; } catch {}
+                        throw new Error(errMsg);
+                    }
+
+                    const reader = res.body.getReader();
+                    const decoder = new TextDecoder("utf-8");
+                    let buffer = "", turnContent = "", firstChunk = true;
+                    const toolAcc = [];
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        buffer += decoder.decode(value, { stream: true });
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop();
+                        for (const line of lines) {
+                            const s = line.trim();
+                            if (!s || !s.startsWith('data: ')) continue;
+                            const dataStr = s.slice(6);
+                            if (dataStr === '[DONE]') continue;
+                            let data;
+                            try { data = JSON.parse(dataStr); } catch { continue; }
+
+                            if (data.id) lastGenId = data.id;
+                            if (data.usage && data.usage.cost != null) {
+                                mainCost += Number(data.usage.cost) || 0;
+                                patch(m => ({ ...m, cost: mainCost, usage: data.usage }));
+                            }
+                            if (firstChunk) {
+                                firstChunk = false; setIsLoading(false);
+                                patch(m => ({ ...m, actualModel: data.model || '', isThinking: false }));
+                            }
+                            const delta = data.choices?.[0]?.delta;
+                            if (!delta) continue;
+                            if (delta.reasoning) reasoningAcc += delta.reasoning;
+                            if (delta.content) { turnContent += delta.content; fullText += delta.content; }
+                            if (Array.isArray(delta.tool_calls)) {
+                                for (const call of delta.tool_calls) {
+                                    const i = call.index ?? 0;
+                                    if (!toolAcc[i]) toolAcc[i] = { id: '', type: 'function', function: { name: '', arguments: '' } };
+                                    if (call.id) toolAcc[i].id = call.id;
+                                    if (call.function?.name) toolAcc[i].function.name += call.function.name;
+                                    if (call.function?.arguments) toolAcc[i].function.arguments += call.function.arguments;
+                                }
+                            }
+                        }
+                    }
+                    return { content: turnContent, toolCalls: toolAcc.filter(Boolean).filter(c => c.function.name) };
+                };
+
+                try {
+                    /* контекст */
+                    const convo = [];
+                    if (systemInstruction.trim()) convo.push({ role: 'system', content: systemInstruction });
+                    const history = activeChat?.messages.slice(-10) || [];
+                    for (const msg of history) {
+                        if (msg.role === 'user') {
+                            let content;
+                            if (msg.attachments && msg.attachments.length) {
+                                content = [];
+                                if (msg.text) content.push({ type: 'text', text: msg.text });
+                                msg.attachments.forEach(a => content.push({ type: 'image_url', image_url: { url: a.base64 } }));
+                            } else content = msg.text || " ";
+                            convo.push({ role: 'user', content });
+                        } else if (msg.role === 'model' && !msg.isError && msg.text) {
+                            convo.push({ role: 'assistant', content: msg.text });
+                        }
+                    }
+                    let content;
+                    if (activeAttachments.length) {
+                        content = [];
+                        if (userText) content.push({ type: 'text', text: userText });
+                        activeAttachments.forEach(a => content.push({ type: 'image_url', image_url: { url: a.base64 } }));
+                    } else content = userText;
+                    convo.push({ role: 'user', content });
+
+                    /* цикл tool-calling */
+                    let searchCount = 0, guard = 0;
+                    while (guard++ < MAX_SEARCHES + 2) {
+                        const allowTools = webSearch && model.supportsTools !== false && searchCount < MAX_SEARCHES;
+                        const turn = await streamTurn(convo, allowTools);
+
+                        if (turn.toolCalls.length && allowTools) {
+                            convo.push({ role: 'assistant', content: turn.content || "", tool_calls: turn.toolCalls });
+                            for (const call of turn.toolCalls) {
+                                if (searchCount >= MAX_SEARCHES) {
+                                    convo.push({ role: 'tool', tool_call_id: call.id, name: call.function.name, content: t.searchLimitNote });
+                                    continue;
+                                }
+                                let query = '';
+                                try { query = JSON.parse(call.function.arguments || '{}').query || ''; } catch {}
+                                searchCount++;
+                                const searchId = genMsgId();
+                                patch(m => ({ ...m, isThinking: false, searchOpen: true,
+                                    searches: [...(m.searches || []), { id: searchId, query, status: 'running' }] }));
+                                try {
+                                    const r = await runSonarSearch(query, controller.signal);
+                                    searchCost += r.cost || 0;
+                                    patch(m => ({ ...m, searchCost,
+                                        searches: (m.searches || []).map(s => s.id === searchId
+                                            ? { ...s, status: 'done', summary: r.content, citations: r.citations, cost: r.cost } : s) }));
+                                    convo.push({ role: 'tool', tool_call_id: call.id, name: call.function.name,
+                                        content: JSON.stringify({ query, answer: r.content, sources: r.citations }) });
+                                } catch (err) {
+                                    if (err.name === 'AbortError') throw err;
+                                    patch(m => ({ ...m, searches: (m.searches || []).map(s => s.id === searchId
+                                        ? { ...s, status: 'error', error: err.message } : s) }));
+                                    convo.push({ role: 'tool', tool_call_id: call.id, name: call.function.name,
+                                        content: `${t.searchError}: ${err.message}` });
+                                }
+                            }
+                            continue;
+                        }
+                        break;
+                    }
+
+                    streamFinished = true;
+                    reportSpend();
+                    if (!fullText) patch(m => ({ ...m, text: `⚠️ ${t.emptyResponse}`, isError: true, isThinking: false, searchOpen: false }));
+
+                } catch (e) {
+                    streamFinished = true; displayed = fullText;
+                    reportSpend();
+                    if (e.name === 'AbortError') {
+                        patch(m => ({ ...m, text: fullText ? fullText + `\n\n${t.reqStopped}` : t.reqStopped, isError: !fullText, isThinking: false, searchOpen: false }));
+                    } else {
+                        patch(m => ({ ...m, text: fullText ? fullText + `\n\n⚠️ ${t.errorPrefix}${e.message}` : `⚠️ ${t.errorPrefix}${e.message}`, isError: !fullText, isThinking: false, searchOpen: false }));
+                    }
+                    finalize();
+                }
+            };
+
+            const balancePercentage = useMemo(() => {
+                if (!balanceData || balanceData.limit <= 0) return 0;
+                return Math.min((balanceData.usage / balanceData.limit) * 100, 100);
+            }, [balanceData]);
+
+            const balanceLeft = useMemo(() => {
+                if (!balanceData || balanceData.limit <= 0) return null;
+                return Math.max(balanceData.limit - balanceData.usage, 0);
+            }, [balanceData]);
+
+            /* полоса баланса, поделённая между устройствами одного ключа */
+            const usageBars = useMemo(() => {
+                const list = (usageDevices || []).filter(d => Number(d.cost) > 0);
+                const tracked = list.reduce((sum, d) => sum + Number(d.cost), 0);
+                const limit = balanceData ? balanceData.limit : 0;
+                const used = balanceData ? balanceData.usage : 0;
+                /* делим на сумму показанного: сегменты устройств заполняют потраченную часть целиком */
+                const denom = Math.max(tracked, 1e-9);
+                const colors = deviceColorMap(list.map(d => d.tag));
+                const fill = limit > 0 ? Math.min((used / limit) * 100, 100) : (tracked > 0 ? 100 : 0);
+                const segs = list.map(d => ({
+                    tag: d.tag,
+                    name: d.name || ('Устройство ' + String(d.tag).slice(0, 4)),
+                    cost: Number(d.cost),
+                    requests: Number(d.requests) || 0,
+                    models: (d.models && typeof d.models === 'object') ? d.models : {},
+                    last: Number(d.last) || 0,
+                    /* цвет из админки, иначе автоматический по позиции */
+                    color: d.color || colors[d.tag],
+                    mine: !!myTag && d.tag === myTag,
+                    share: Number(d.cost) / denom,
+                    width: (Number(d.cost) / denom) * fill
+                }));
+                return { segs, tracked, used, limit, fill, hasLimit: limit > 0 };
+            }, [usageDevices, balanceData]);
+
+            const toggleSearchPanel = (chatId, msgId) => setChats(prev => prev.map(c => c.id === chatId
+                ? { ...c, messages: c.messages.map(m => m.id === msgId ? { ...m, searchOpen: !m.searchOpen } : m) } : c));
+
+            const modelInfo = useMemo(() => {
+                const map = {};
+                (models || []).forEach((m) => { map[m.id] = m; });
+                return map;
+            }, [models]);
+            const modelName = (id) => (modelInfo[id] && modelInfo[id].name) || id;
+            const modelColor = (id) => (modelInfo[id] && modelInfo[id].color) || autoModelColor(id);
+
+            const openBalance = () => { setIsBalanceOpen(true); setStatsOpen(false); fetchBalance(); loadUsage(); };
+
+            const balanceBar = (
+                <div className="w-full h-1.5 bg-[var(--border-color)] rounded-full overflow-hidden flex">
+                    {usageBars.segs.map(s => (
+                        <div key={s.tag} className="h-full transition-all duration-500"
+                            style={{ width: `${s.width}%`, background: s.color }} title={`${s.name} — ${fmt$(s.cost)}`}></div>
+                    ))}
+                    {usageBars.segs.length === 0 && (
+                        <div className="h-full bg-[var(--accent-blue)] transition-all duration-500"
+                            style={{ width: `${balancePercentage}%` }}></div>
+                    )}
+                </div>
+            );
+
+            const balanceBlock = (
+                <div className="mt-4 px-3 flex flex-col gap-2 cursor-pointer hover:opacity-90" onClick={openBalance} title={t.balanceByDevice}>
+                    <div className="flex items-center justify-between text-[11px] font-mono text-[var(--text-secondary)]">
+                        <span>{t.balanceLabel}</span>
+                        <span>{balanceData ? `${balancePercentage.toFixed(1)}%` : '...'}</span>
+                    </div>
+                    {balanceBar}
+                    {usageBars.segs.length > 0 && (
+                        <div className="flex flex-wrap gap-x-2.5 gap-y-1 pt-0.5">
+                            {usageBars.segs.slice(0, 4).map(s => (
+                                <span key={s.tag} className="flex items-center gap-1.5 text-[10px] text-[var(--text-secondary)]">
+                                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: s.color }}></span>
+                                    <span className="truncate max-w-[88px]">{s.name}</span>
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+
+            /* ---------- RENDER ---------- */
+            const modals = (
+                <>
+                        {/* Модалка размышления */}
+                        {reasoningModalMsg && (
+                            <Modal title={t.reasoningTitle} onClose={() => setReasoningModalMsg(null)}
+                                footer={<button onClick={() => setReasoningModalMsg(null)} className="px-6 py-2.5 bg-[var(--accent-blue)] text-[#000] rounded-full font-medium">{t.close}</button>}>
+                                <div className="space-y-5 text-sm">
+                                    <div>
+                                        <div className="text-xs uppercase tracking-wider text-[var(--text-secondary)] font-bold mb-2">reasoning tokens</div>
+                                        {reasoningModalMsg.reasoning ? (
+                                            <pre className="whitespace-pre-wrap font-mono text-xs bg-[var(--bg-input)] border border-[var(--border-color)] rounded-xl p-4 max-h-72 overflow-y-auto scrollbar-slim">{reasoningModalMsg.reasoning}</pre>
+                                        ) : <div className="text-[var(--text-secondary)]">{t.noReasoning}</div>}
+                                    </div>
+                                    <div>
+                                        <div className="text-xs uppercase tracking-wider text-[var(--text-secondary)] font-bold mb-2">{t.searchLog}</div>
+                                        {(reasoningModalMsg.searches || []).length === 0 ? (
+                                            <div className="text-[var(--text-secondary)]">{t.noSearches}</div>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                {reasoningModalMsg.searches.map((s, i) => (
+                                                    <div key={s.id} className="bg-[var(--bg-input)] border border-[var(--border-color)] rounded-xl p-3">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--cost-bg)]">#{i+1}</span>
+                                                            <span className="font-medium">{s.query}</span>
+                                                            <span className="ml-auto text-[10px] font-mono text-[var(--text-secondary)]">{SEARCH_MODEL} · {fmt$(s.cost)}</span>
+                                                        </div>
+                                                        {s.summary && <div className="text-xs text-[var(--text-secondary)] whitespace-pre-wrap max-h-40 overflow-y-auto scrollbar-slim">{s.summary}</div>}
+                                                        {s.error && <div className="text-xs text-red-400">{s.error}</div>}
+                                                        {s.citations && s.citations.length > 0 && (
+                                                            <div className="mt-2 flex flex-wrap gap-1.5">
+                                                                {s.citations.map((c, k) => (
+                                                                    <a key={k} href={c} target="_blank" rel="noopener noreferrer" className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--cost-bg)] border border-[var(--border-color)] hover:text-[var(--accent-blue)]">{k+1}. {hostOf(c)}</a>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </Modal>
+                        )}
+
+                        {/* Модалка стоимости */}
+                        {costModalMsg && (() => {
+                            const main = costModalMsg.cost || 0;
+                            const search = costModalMsg.searchCost || 0;
+                            const total = main + search;
+                            const pct = (v) => total > 0 ? Math.max(2, (v / total) * 100) : 0;
+                            return (
+                                <Modal title={t.costTitle} onClose={() => setCostModalMsg(null)}
+                                    footer={<button onClick={() => setCostModalMsg(null)} className="px-6 py-2.5 bg-[var(--accent-blue)] text-[#000] rounded-full font-medium">{t.close}</button>}>
+                                    <div className="max-w-md mx-auto">
+                                        <div className="rounded-2xl border border-[var(--border-color)] px-6 py-7 text-center"
+                                            style={{ background: 'linear-gradient(160deg, color-mix(in srgb, var(--accent-blue) 14%, transparent), transparent 70%)' }}>
+                                            <div className="text-[10px] uppercase tracking-[0.14em] text-[var(--text-secondary)] mb-2">{t.costTotal}</div>
+                                            <div className="text-[34px] leading-none font-mono font-bold tracking-tight">{fmt$(total)}</div>
+                                            {total === 0 && <div className="text-xs text-[var(--text-secondary)] mt-3">{t.costPending}</div>}
+                                        </div>
+
+                                        <div className="mt-4 rounded-2xl border border-[var(--border-color)] overflow-hidden">
+                                            <div className="flex items-center gap-3.5 p-4 bg-[var(--bg-input)]">
+                                                <div className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center bg-[var(--cost-bg)]">
+                                                    <ModelIcon icon={costModalMsg.icon} theme={theme} className="w-5 h-5" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-sm font-medium">{t.costMain}</div>
+                                                    <div className="text-[11px] font-mono text-[var(--text-secondary)] truncate mt-0.5">{costModalMsg.actualModel || costModalMsg.modelId}</div>
+                                                    <div className="h-1 mt-2 rounded-full bg-[var(--cost-bg)] overflow-hidden">
+                                                        <div className="h-full rounded-full bg-[var(--accent-blue)] transition-all" style={{ width: `${pct(main)}%` }}></div>
+                                                    </div>
+                                                </div>
+                                                <span className="font-mono text-sm self-start pt-0.5">{fmt$(main)}</span>
+                                            </div>
+
+                                            <div className="h-px bg-[var(--border-color)]"></div>
+
+                                            <div className="flex items-center gap-3.5 p-4 bg-[var(--bg-input)]">
+                                                <div className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center bg-[var(--cost-bg)]">
+                                                    <Icon name="globe" className="w-4 h-4 text-[var(--accent-blue)]" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-sm font-medium">{t.costSearch}</div>
+                                                    <div className="text-[11px] font-mono text-[var(--text-secondary)] truncate mt-0.5">{SEARCH_MODEL} · ×{(costModalMsg.searches || []).length}</div>
+                                                    <div className="h-1 mt-2 rounded-full bg-[var(--cost-bg)] overflow-hidden">
+                                                        <div className="h-full rounded-full bg-[var(--text-secondary)] opacity-60 transition-all" style={{ width: `${pct(search)}%` }}></div>
+                                                    </div>
+                                                </div>
+                                                <span className="font-mono text-sm self-start pt-0.5">{fmt$(search)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Modal>
+                            );
+                        })()}
+
+                        {/* Расход по устройствам */}
+                        {isBalanceOpen && (
+                            <Modal onClose={() => setIsBalanceOpen(false)}
+                                title={<span className="flex items-center gap-2">
+                                    {t.balanceByDevice}
+                                    <button onClick={() => setStatsOpen(v => !v)} title={t.extendedStats}
+                                        className={`w-6 h-6 flex items-center justify-center rounded-md transition-colors ${statsOpen ? 'bg-[var(--cost-bg)] text-[var(--accent-blue)]' : 'text-[var(--text-secondary)] hover:bg-[var(--hover-bg)]'}`}>
+                                        <Icon name="bar-chart-2" className="w-3.5 h-3.5" />
+                                    </button>
+                                </span>}
+                                footer={<button onClick={() => setIsBalanceOpen(false)} className="px-6 py-2.5 bg-[var(--accent-blue)] text-[#000] rounded-full font-medium">{t.close}</button>}>
+                                <div className="space-y-4 text-sm">
+                                    <div className="w-full h-3 rounded-full overflow-hidden flex bg-[var(--border-color)]">
+                                        {usageBars.segs.map(s => (
+                                            <div key={s.tag} style={{ width: `${s.width}%`, background: s.color }} title={s.name}></div>
+                                        ))}
+
+                                    </div>
+
+                                    {statsOpen && (
+                                        <div className="space-y-2.5">
+                                            {usageBars.segs.map(s => {
+                                                const entries = Object.entries(s.models || {})
+                                                    .filter(([, v]) => Number(v.cost) > 0)
+                                                    .sort((a, b) => Number(b[1].cost) - Number(a[1].cost));
+                                                const tot = entries.reduce((x, [, v]) => x + Number(v.cost), 0);
+                                                return (
+                                                    <div key={s.tag} className="p-3 rounded-xl bg-[var(--bg-input)] border border-[var(--border-color)]">
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: s.color }}></span>
+                                                            <span className="flex-1 min-w-0 truncate font-medium">{s.name}</span>
+                                                            {s.mine && <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--cost-bg)] text-[var(--text-secondary)] flex-shrink-0">{t.thisDevice}</span>}
+                                                            <span className="font-mono text-xs text-[var(--text-secondary)] flex-shrink-0">{fmt$(s.cost)}</span>
+                                                        </div>
+                                                        {entries.length === 0 ? (
+                                                            <div className="text-xs text-[var(--text-secondary)]">{t.noModelData}</div>
+                                                        ) : (
+                                                            <>
+                                                                <div className="w-full h-2 rounded-full overflow-hidden flex bg-[var(--border-color)]">
+                                                                    {entries.map(([id, v]) => (
+                                                                        <div key={id} style={{ width: `${(Number(v.cost) / tot) * 100}%`, background: modelColor(id) }}
+                                                                            title={`${modelName(id)} — ${fmt$(v.cost)}`}></div>
+                                                                    ))}
+                                                                </div>
+                                                                <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+                                                                    {entries.slice(0, 6).map(([id, v]) => (
+                                                                        <span key={id} className="flex items-center gap-1.5 text-[10px] text-[var(--text-secondary)]">
+                                                                            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: modelColor(id) }}></span>
+                                                                            <span className="truncate max-w-[130px]">{modelName(id)}</span>
+                                                                            <span className="opacity-60 flex-shrink-0">{Math.round((Number(v.cost) / tot) * 100)}%</span>
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                            {usageBars.segs.length === 0 && (
+                                                <div className="text-[var(--text-secondary)] py-6 text-center">{t.noDeviceData}</div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {statsOpen ? null : usageBars.segs.length === 0 ? (
+                                        <div className="text-[var(--text-secondary)] py-6 text-center">{t.noDeviceData}</div>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            {usageBars.segs.map(s => (
+                                                <div key={s.tag} className="flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-input)] border border-[var(--border-color)]">
+                                                    {s.mine ? (
+                                                        <input type="color" className="dot-color w-4 h-4 flex-shrink-0" value={s.color}
+                                                            onChange={(e) => changeMyColor(e.target.value)} title={t.yourColor} />
+                                                    ) : (
+                                                        <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: s.color }}></span>
+                                                    )}
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="font-medium truncate flex items-center gap-2">
+                                                            {s.name}
+                                                            {s.mine && <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--cost-bg)] text-[var(--text-secondary)] font-normal flex-shrink-0">{t.thisDevice}</span>}
+                                                        </div>
+                                                        <div className="text-[11px] text-[var(--text-secondary)] font-mono mt-0.5">
+                                                            {s.requests} {activeLang === 'ru' ? plural(s.requests, 'запрос', 'запроса', 'запросов') : t.deviceRequests}{s.last ? ` · ${new Date(s.last).toLocaleDateString()}` : ''}
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right flex-shrink-0">
+                                                        <div className="font-mono">{fmt$(s.cost)}</div>
+                                                        <div className="text-[11px] text-[var(--text-secondary)]">{(s.share * 100).toFixed(1)}%</div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                </div>
+                            </Modal>
+                        )}
+
+                        {/* Настройки */}
+                        {isSettingsOpen && (
+                            <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4" onClick={() => setIsSettingsOpen(false)}>
+                                <div className="bg-[var(--bg-surface)] rounded-2xl w-full max-w-lg border border-[var(--border-color)] shadow-2xl flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+                                    <div className="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
+                                        <h2 className="text-xl font-bold">{t.settings}</h2>
+                                        <button onClick={() => setIsSettingsOpen(false)} className="p-1 rounded-full hover:bg-[var(--hover-bg)] text-[var(--text-secondary)]"><Icon name="x" className="w-5 h-5" /></button>
+                                    </div>
+                                    <div className="p-6 overflow-y-auto space-y-8 scrollbar-slim">
+                                        {/* Блок «ИИ и поведение» убран: системные инструкции и тумблер веб-поиска.
+                                            Веб-поиск включается только кнопкой глобуса в строке ввода.
+                                            Чтобы вернуть системные инструкции — см. openMemoryModal / isMemoryModalOpen ниже. */}
+                                        <div className="space-y-4">
+                                            <h3 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">{t.settingsAppearance}</h3>
+                                            <div>
+                                                <label className="block text-sm mb-2 font-medium">{t.theme}</label>
+                                                <div className="flex gap-1 p-1 bg-[var(--bg-sidebar)] rounded-xl border border-[var(--border-color)]">
+                                                    <button onClick={() => setTempTheme('light')} className={`flex-1 py-2 rounded-lg text-sm ${tempTheme === 'light' ? 'bg-[var(--bg-body)] font-medium' : 'text-[var(--text-secondary)]'}`}>Light</button>
+                                                    <button onClick={() => setTempTheme('dark')} className={`flex-1 py-2 rounded-lg text-sm ${tempTheme === 'dark' ? 'bg-[var(--bg-body)] font-medium' : 'text-[var(--text-secondary)]'}`}>Dark</button>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm mb-2 font-medium">{t.tabTitleSetting}</label>
+                                                <input type="text" value={tempTabTitle} onChange={e => setTempTabTitle(e.target.value)} placeholder={t.tabTitlePlaceholder} className="w-full p-3.5 rounded-xl bg-[var(--bg-input)] border border-[var(--border-color)] focus:outline-none focus:border-[var(--accent-blue)] text-sm" />
+                                            </div>
+                                        </div>
+
+                                        <div className="h-px bg-[var(--border-color)] opacity-50"></div>
+
+                                        <div className="space-y-4">
+                                            <h3 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">{t.settingsData}</h3>
+                                            <div>
+                                                <label className="block text-sm mb-2 font-medium">{t.yourName}</label>
+                                                <input type="text" value={tempNickname} onChange={e => setTempNickname(e.target.value)} className="w-full p-3.5 rounded-xl bg-[var(--bg-input)] border border-[var(--border-color)] focus:outline-none focus:border-[var(--accent-blue)] text-sm" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm mb-2 font-medium">{t.apiKey}</label>
+                                                <input type="password" value={tempApiKey} onChange={e => setTempApiKey(e.target.value)} placeholder={t.apiKeyPlaceholder} className="w-full p-3.5 rounded-xl bg-[var(--bg-input)] border border-[var(--border-color)] focus:outline-none focus:border-[var(--accent-blue)] font-mono text-sm" />
+                                                <div className="text-xs mt-2 flex items-center gap-2">
+                                                    {keyInfo.kind === 'code' && (
+                                                        <span className="text-[var(--accent-blue)]">{t.codeAccepted}{keyInfo.label ? ` - ${keyInfo.label}` : ''}</span>
+                                                    )}
+                                                    {keyInfo.kind === 'bad' && <span className="text-red-400">{t.codeUnknown}</span>}
+                                                    {keyInfo.kind === 'checking' && <span className="text-[var(--text-secondary)]">{t.codeChecking}</span>}
+                                                    {keyInfo.kind === 'key' && <span className="text-[var(--text-secondary)]">{t.ownKeyUsed}</span>}
+                                                    {(keyInfo.kind === 'none' || keyInfo.kind === 'offline') && <span className="text-[var(--text-secondary)]">{t.apiKeyHint}</span>}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="p-6 border-t border-[var(--border-color)] flex justify-between items-center gap-4">
+                                        <button onClick={clearAllHistory} className="px-5 py-2.5 text-red-400 bg-red-500/10 hover:bg-red-500/20 rounded-full text-sm font-medium">{t.clearHistory}</button>
+                                        <button onClick={saveSettings} className="px-8 py-2.5 bg-[var(--accent-blue)] text-[#000] rounded-full font-medium ml-auto">{t.save}</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {isMemoryModalOpen && (
+                            <Modal title={t.systemInstructions} onClose={() => setIsMemoryModalOpen(false)}
+                                footer={<>
+                                    <button onClick={() => setIsMemoryModalOpen(false)} className="px-6 py-2.5 hover:bg-[var(--hover-bg)] rounded-full font-medium">{t.cancel}</button>
+                                    <button onClick={saveMemory} className="px-8 py-2.5 bg-[var(--accent-blue)] text-[#000] rounded-full font-medium">{t.save}</button>
+                                </>}>
+                                <textarea value={tempSystemInstruction} onChange={e => setTempSystemInstruction(e.target.value)} placeholder={t.sysInstPlaceholder}
+                                    className="w-full h-64 p-4 rounded-xl bg-[var(--bg-input)] border border-[var(--border-color)] focus:outline-none focus:border-[var(--accent-blue)] resize-none leading-relaxed" autoFocus />
+                                <p className="mt-4 text-sm text-[var(--text-secondary)]">{t.sysInstDescription}</p>
+                            </Modal>
+                        )}
+
+                        {isWelcomeModalOpen && (
+                            <div className="fixed inset-0 bg-black/90 z-[150] flex items-center justify-center p-4">
+                                <div className="bg-[var(--bg-surface)] p-8 rounded-3xl w-full max-w-md border border-[var(--border-color)] text-center">
+                                    <div className="mb-6"><GeminiIcon className="w-14 h-14 mx-auto animate-pulse" /></div>
+                                    <h2 className="text-2xl font-bold mb-2">{t.welcome}</h2>
+                                    <p className="text-[var(--text-secondary)] mb-8">{t.askName}</p>
+                                    <input type="text" value={nickname} onChange={e => setNickname(e.target.value)} placeholder={t.namePlaceholder}
+                                        className="w-full p-4 rounded-xl bg-[var(--bg-input)] border border-[var(--border-color)] focus:outline-none focus:border-[var(--accent-blue)] text-center text-lg mb-6"
+                                        onKeyDown={e => e.key === 'Enter' && saveNickname(nickname)} />
+                                    <button onClick={() => saveNickname(nickname)} className="w-full py-4 bg-[var(--accent-blue)] text-[#000] rounded-xl font-bold">{t.startChat}</button>
+                                </div>
+                            </div>
+                        )}
+                </>
+            );
+
+            /* ---------- режим скрытности: страница «Википедии» ---------- */
+            if (safeMode) {
+                const wikiSubmit = (e) => {
+                    if (e) e.preventDefault();
+                    if (isGenerating) { handleStopGeneration(); return; }
+                    sendMessage();
+                };
+                const tocItems = [
+                    ['(Top)', false], ['Life and career', true], ['Scientific career', true], ['Legacy', true],
+                    ['In popular culture', false], ['Awards and honors', false], ['Publications', true],
+                    ['See also', false], ['Footnotes', false], ['Notes', false], ['References', true],
+                    ['Further reading', false], ['External links', false]
+                ];
+                const radio = (group, value, current, setter, label) => (
+                    <label className="wk-rad">
+                        <input type="radio" name={group} checked={current === value} onChange={() => setter(value)} />
+                        <span>{label}</span>
+                    </label>
+                );
+
+                return (
+                    <>
+                        <div className={`wk ${wikiDark ? 'dark' : ''} wk-w-${wikiWidth} wk-t-${wikiText}`}
+                            ref={chatContainerRef} onScroll={handleChatScroll}>
+                            <header className="wk-head">
+                                <button className="wk-burger" onClick={() => setWikiToc(v => !v)} title="Main menu">
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path d="M1 3h18v2H1zM1 9h18v2H1zM1 15h18v2H1z" />
+                                    </svg>
+                                </button>
+                                <div className="wk-logo">
+                                    <div className="wm">
+                                        <b>WIKIPEDIA</b>
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/40px-Wikipedia-logo-v2.svg.png"
+                                            alt="" onError={(e) => { e.target.style.display = 'none'; }} />
+                                    </div>
+                                    <span>25 years of the free encyclopedia</span>
+                                </div>
+                                <form className="wk-search" onSubmit={wikiSubmit}>
+                                    <div className="wrap">
+                                        <svg className="ico" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                            <path d="M12.2 13.6a7 7 0 111.4-1.4l5.4 5.4-1.4 1.4-5.4-5.4zM8 13A5 5 0 108 3a5 5 0 000 10z" />
+                                        </svg>
+                                        <input value={input} onChange={(e) => setInput(e.target.value)} onPaste={handlePaste}
+                                            placeholder="Search Wikipedia" autoComplete="off" spellCheck="false" />
+                                    </div>
+                                    <button type="submit">Search</button>
+                                </form>
+                                <nav className="wk-nav">
+                                    <a>Donate</a><a>Create account</a><a>Log in</a>
+                                </nav>
+                            </header>
+
+                            <div className="wk-body">
+                                {wikiToc ? (
+                                    <aside className="wk-toc">
+                                        <div className="wk-ph">
+                                            <h3>Contents</h3>
+                                            <button className="wk-hide" onClick={() => setWikiToc(false)}>hide</button>
+                                        </div>
+                                        <ul>
+                                            {tocItems.map(([label, arrow]) => (
+                                                <li key={label}>
+                                                    <a className={label === '(Top)' ? 'top' : ''}>
+                                                        {arrow && <span className="arw">›</span>}{label}
+                                                    </a>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </aside>
+                                ) : <aside className="wk-toc"><button className="wk-show" onClick={() => setWikiToc(true)}>Contents</button></aside>}
+
+                                <main className="wk-main">
+                                    {(activeChat?.messages || []).map((msg) => (
+                                        msg.role === 'user' ? (
+                                            <div key={msg.id}>
+                                                {msg.attachments && msg.attachments.length > 0 && (
+                                                    <div className="wk-att">
+                                                        {msg.attachments.map((att, i) => <img key={i} src={att.base64} alt="" />)}
+                                                    </div>
+                                                )}
+                                                {msg.text && <p className="wk-q">{msg.text}</p>}
+                                            </div>
+                                        ) : (
+                                            <div key={msg.id} className="wk-a wk-turn">
+                                                {msg.isThinking && !msg.text ? (
+                                                    <div className="wk-dots"><span></span><span></span><span></span></div>
+                                                ) : (
+                                                    <div className={msg.isError ? 'wk-err' : ''}><MarkdownRenderer content={msg.text} /></div>
+                                                )}
+                                            </div>
+                                        )
+                                    ))}
+                                </main>
+
+                                {wikiAppear ? (
+                                    <aside className="wk-app">
+                                        <div className="wk-ph">
+                                            <h3>Appearance</h3>
+                                            <button className="wk-hide" onClick={() => setWikiAppear(false)}>hide</button>
+                                        </div>
+                                        <div className="wk-grp">
+                                            <div>Text</div>
+                                            {radio('wk-text', 'small', wikiText, setWikiText, 'Small')}
+                                            {radio('wk-text', 'standard', wikiText, setWikiText, 'Standard')}
+                                            {radio('wk-text', 'large', wikiText, setWikiText, 'Large')}
+                                        </div>
+                                        <div className="wk-grp">
+                                            <div>Width</div>
+                                            {radio('wk-width', 'standard', wikiWidth, setWikiWidth, 'Standard')}
+                                            {radio('wk-width', 'wide', wikiWidth, setWikiWidth, 'Wide')}
+                                        </div>
+                                        <div className="wk-grp">
+                                            <div>Color</div>
+                                            {radio('wk-color', 'auto', wikiColor, setWikiColor, 'Automatic')}
+                                            {radio('wk-color', 'light', wikiColor, setWikiColor, 'Light')}
+                                            {radio('wk-color', 'dark', wikiColor, setWikiColor, 'Dark')}
+                                        </div>
+                                    </aside>
+                                ) : <aside className="wk-app"><button className="wk-show" onClick={() => setWikiAppear(true)}>Appearance</button></aside>}
+                            </div>
+                        </div>
+
+                        {/* панель у левого края: модель, чаты, настройки, баланс */}
+                        <div className="wk-edge" onMouseEnter={() => setWikiMenu(true)}></div>
+                        <div className={`wk-panel ${wikiMenu ? '' : 'off'}`}
+                            onMouseEnter={() => setWikiMenu(true)} onMouseLeave={() => setWikiMenu(false)}>
+                            <div className="p-3 pb-2">
+                                <button onClick={createNewChat} className="flex items-center gap-2 px-3 py-2 rounded-full bg-[var(--hover-bg)] text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+                                    <Icon name="plus" className="w-4 h-4" /><span>{t.newChat}</span>
+                                </button>
+                            </div>
+                            <div className="px-2 pb-2 max-h-[38vh] overflow-y-auto scrollbar-slim flex-shrink-0">
+                                <div className="px-3 py-1 text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-bold">{t.modelsLabel}</div>
+                                {models.map(m => {
+                                    const isActive = m.id === modelId;
+                                    const efforts = m.reasoning && Array.isArray(m.reasoningOptions) ? m.reasoningOptions : [];
+                                    const showEfforts = isActive && efforts.length > 1;
+                                    return (
+                                        <div key={m.id} className={`flex items-center gap-1 rounded-lg transition-colors ${isActive ? 'bg-[var(--hover-bg)]' : 'hover:bg-[var(--hover-bg)]'}`}>
+                                            <button onClick={() => setModelId(m.id)} className="flex-1 min-w-0 flex items-center gap-2.5 p-2.5 text-left">
+                                                <ModelIcon icon={m.icon} theme={theme} className="w-4 h-4 flex-shrink-0" active={isActive} />
+                                                <span className="flex-1 min-w-0 text-[13px] font-medium truncate">{m.name}</span>
+                                                {isActive && <Icon name="check" className="w-3.5 h-3.5 text-[var(--accent-blue)] flex-shrink-0" />}
+                                            </button>
+                                            {showEfforts && (
+                                                <div className={`gap-0.5 p-1 mr-1.5 rounded-lg bg-[var(--bg-body)] border border-[var(--border-color)] flex-shrink-0 ${efforts.length > 3 ? 'grid grid-cols-2' : 'flex flex-col'}`} title={t.effort}>
+                                                    {efforts.map(opt => (
+                                                        <button key={opt} onClick={() => setReasoningEffort(opt)}
+                                                            className={`px-2 py-0.5 rounded text-[10px] leading-tight whitespace-nowrap ${effectiveEffort === opt ? 'bg-[var(--bg-sidebar)] text-[var(--text-primary)] font-medium' : 'text-[var(--text-secondary)] hover:bg-[var(--hover-bg)]'}`}>
+                                                            {(t.effortLabels && t.effortLabels[opt]) || opt}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <div className="flex-1 min-h-[110px] overflow-y-auto px-2 border-t border-[var(--border-color)] pt-2">
+                                <div className="px-3 py-1 text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-bold">{t.recent}</div>
+                                {chats.map(chat => (
+                                    <div key={chat.id} onClick={() => handleSwitchChat(chat.id)}
+                                        className={`group flex items-center justify-between p-2.5 px-3 rounded-lg cursor-pointer text-[13px] ${activeChatId === chat.id ? 'bg-[var(--active-chat-bg)] text-[var(--active-chat-text)] font-medium' : 'hover:bg-[var(--hover-bg)]'}`}>
+                                        <span className="truncate">{chat.title || t.newChat}</span>
+                                        {activeChatId === chat.id && (
+                                            <button onClick={(e) => deleteChat(e, chat.id)} className="opacity-70 hover:opacity-100 flex-shrink-0">
+                                                <Icon name="trash-2" className="w-3.5 h-3.5" />
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="p-3 border-t border-[var(--border-color)]">
+                                <div className="flex items-center gap-1">
+                                    <button onClick={openSettings} className="flex-1 flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--hover-bg)] text-[13px]">
+                                        <Icon name="settings" className="w-4 h-4 text-[var(--text-secondary)]" /><span>{t.settings}</span>
+                                    </button>
+                                    <button onClick={() => setWebSearch(!webSearch)} disabled={currentModel.supportsTools === false}
+                                        className={`w-9 h-9 flex items-center justify-center rounded-lg ${currentModel.supportsTools === false ? 'opacity-30' : (webSearch ? 'text-[var(--accent-blue)] bg-[var(--cost-bg)]' : 'text-[var(--text-secondary)] hover:bg-[var(--hover-bg)]')}`}
+                                        title={`${t.webSearch}: ${webSearch ? 'ON' : 'OFF'}`}>
+                                        <Icon name="globe" className="w-4 h-4" />
+                                    </button>
+                                    <button onClick={() => document.getElementById('file-upload-wk').click()}
+                                        className="w-9 h-9 flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--hover-bg)]" title={t.attachPhoto}>
+                                        <Icon name="paperclip" className="w-4 h-4" />
+                                    </button>
+                                </div>
+                                {attachments.length > 0 && (
+                                    <div className="flex gap-2 mt-2 overflow-x-auto scrollbar-slim">
+                                        {attachments.map((att, i) => (
+                                            <div key={i} className="relative w-11 h-11 flex-shrink-0">
+                                                <img src={att.base64} className="w-full h-full object-cover rounded-lg border border-[var(--border-color)]" alt="" />
+                                                <button onClick={() => setAttachments(prev => prev.filter((_, idx) => idx !== i))}
+                                                    className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5">
+                                                    <Icon name="x" className="w-2.5 h-2.5" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                {balanceBlock}
+                            </div>
+                        </div>
+
+                        <input type="file" id="file-upload-wk" multiple accept="image/*" className="hidden" onChange={handleFileChange} />
+                        <button onClick={() => setSafeMode(!safeMode)} className="fixed bottom-0 right-0 w-9 h-9 z-[100] cursor-default opacity-0 hover:opacity-10 transition-opacity duration-500 bg-[var(--safe-btn)]"></button>
+                        {modals}
+                    </>
+                );
+            }
+
+
+            return (
+                <div className="flex h-screen w-full text-[var(--text-primary)] bg-[var(--bg-body)] overflow-hidden">
+                    <button onClick={() => setSafeMode(!safeMode)} className="fixed bottom-0 right-0 w-9 h-9 z-[100] cursor-default opacity-5 hover:opacity-60 transition-opacity duration-500 bg-[var(--safe-btn)]" title=""></button>
+                    {safeMode && (<div className="hidden md:block fixed top-0 left-0 w-4 h-full z-[60]" onMouseEnter={() => setIsSidebarHovered(true)}></div>)}
+
+                    <aside
+                        className={`fixed inset-y-0 left-0 z-50 w-[300px] bg-[var(--bg-sidebar)] transition-transform duration-300 flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${safeMode ? `md:fixed ${isSidebarHovered ? 'md:translate-x-0 shadow-2xl' : 'md:-translate-x-[300px]'}` : 'md:translate-x-0 md:static'}`}
+                        onMouseLeave={() => safeMode && setIsSidebarHovered(false)}
+                        onMouseEnter={() => safeMode && setIsSidebarHovered(true)}
+                    >
+                        <div className="p-4 pt-6">
+                            <button onClick={createNewChat} className="flex items-center gap-3 w-fit px-4 py-3 bg-[var(--hover-bg)] rounded-full transition-colors text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+                                <Icon name={safeMode ? "edit-3" : "plus"} className="w-5 h-5" />
+                                <span className="pr-2">{safeMode ? t.newChatSafe : t.newChat}</span>
+                            </button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto px-2 space-y-1">
+                            <div className="px-4 py-2 text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">{t.recent}</div>
+                            {chats.map(chat => (
+                                <div key={chat.id} onClick={() => handleSwitchChat(chat.id)} className={`group flex items-center justify-between p-3 px-4 rounded-full cursor-pointer text-sm transition-all ${activeChatId === chat.id ? 'bg-[var(--active-chat-bg)] text-[var(--active-chat-text)] font-medium' : 'hover:bg-[var(--hover-bg)]'}`}>
+                                    <div className="flex items-center gap-3 truncate">
+                                        <Icon name={safeMode ? "file-text" : "message-square"} className="w-4 h-4 opacity-70" />
+                                        <span className="truncate max-w-[160px]">{chat.title || t.newChat}</span>
+                                    </div>
+                                    {activeChatId === chat.id && <button onClick={(e) => deleteChat(e, chat.id)} className="opacity-70 hover:opacity-100"><Icon name="trash-2" className="w-4 h-4" /></button>}
+                                </div>
+                            ))}
+                        </div>
+                        <div className="p-4 mt-auto border-t border-[var(--border-color)] flex flex-col">
+                            <button onClick={openSettings} className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-[var(--hover-bg)] transition-colors text-sm">
+                                <Icon name="settings" className="w-5 h-5 text-[var(--text-secondary)]" /><span>{t.settings}</span>
+                            </button>
+                            {balanceBlock}
+                            <div className="mt-6 text-center text-[10px] text-[var(--text-secondary)] opacity-40 font-mono tracking-widest">{APP_VERSION}</div>
+                        </div>
+                    </aside>
+
+                    <main className="flex-1 flex flex-col relative h-full">
+                        {/* mobile header */}
+                        <div className="md:hidden flex items-center justify-between p-4 bg-[var(--bg-body)]">
+                            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)}><Icon name="menu" className="w-6 h-6 text-[var(--text-secondary)]" /></button>
+                            <button onClick={() => !safeMode && setIsModelMenuOpen(!isModelMenuOpen)} className="flex items-center gap-2 font-medium">
+                                {!safeMode && <ModelIcon icon={currentModel.icon} theme={theme} className="w-4 h-4" />}
+                                <span className="truncate max-w-[160px]">{safeMode ? 'Workspace' : currentModel.name}</span>
+                                {!safeMode && <Icon name="chevron-down" className="w-4 h-4" />}
+                            </button>
+                            <div className="w-8"></div>
+                        </div>
+
+                        {/* desktop header */}
+                        <div className="hidden md:flex justify-between items-center p-4 absolute top-0 left-0 right-0 z-20 bg-[var(--bg-body)]">
+                            <div className="relative">
+                                {safeMode ? (
+                                    <div className="flex items-center gap-2 px-3 py-2"><span className="text-lg font-medium">Workspace</span></div>
+                                ) : (
+                                    <button onClick={() => setIsModelMenuOpen(!isModelMenuOpen)} className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--hover-bg)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+                                        <ModelIcon icon={currentModel.icon} theme={theme} className="w-5 h-5" />
+                                        <span className="text-lg font-medium ml-1">{currentModel.name}</span>
+                                        {effectiveEffort && <span className="text-[10px] px-2 py-0.5 rounded bg-[var(--text-primary)] text-[var(--bg-body)] font-mono">{effectiveEffort}</span>}
+                                        <Icon name="chevron-down" className={`w-4 h-4 ml-1 transition-transform ${isModelMenuOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* единый список моделей */}
+                        {isModelMenuOpen && !safeMode && (
+                            <>
+                                <div className="fixed inset-0 z-[55]" onClick={() => setIsModelMenuOpen(false)}></div>
+                                <div className="absolute top-[60px] left-4 right-4 md:right-auto md:w-[420px] bg-[var(--tool-menu-bg)] border border-[var(--border-color)] rounded-xl shadow-2xl p-2 z-[56] animate-slide-up max-h-[70vh] overflow-y-auto scrollbar-slim">
+                                    <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-bold">{t.modelsLabel}</div>
+                                    {models.map(m => {
+                                        const isActive = m.id === modelId;
+                                        const efforts = m.reasoning && Array.isArray(m.reasoningOptions) ? m.reasoningOptions : [];
+                                        const showEfforts = isActive && efforts.length > 1;
+                                        return (
+                                            <div key={m.id}
+                                                className={`flex items-center gap-1 rounded-lg transition-colors ${isActive ? 'bg-[var(--hover-bg)]' : 'hover:bg-[var(--hover-bg)]'}`}>
+                                                <button onClick={() => { setModelId(m.id); setIsModelMenuOpen(false); }}
+                                                    className="flex-1 min-w-0 flex items-start gap-3 p-3 text-left">
+                                                    <ModelIcon icon={m.icon} theme={theme} className="w-5 h-5 mt-0.5 flex-shrink-0" active={isActive} />
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="text-sm font-medium text-[var(--text-primary)] truncate">{m.name}</div>
+                                                        {m.description && <div className="text-xs text-[var(--text-secondary)] mt-1 leading-snug">{m.description}</div>}
+                                                    </div>
+                                                    {isActive && <Icon name="check" className="w-4 h-4 text-[var(--accent-blue)] mt-0.5 flex-shrink-0" />}
+                                                </button>
+                                                {showEfforts && (
+                                                    <div className={`gap-0.5 p-1 mr-2 rounded-lg bg-[var(--bg-sidebar)] border border-[var(--border-color)] flex-shrink-0 ${efforts.length > 3 ? 'grid grid-cols-2' : 'flex flex-col'}`}
+                                                        title={t.effort}>
+                                                        {efforts.map(opt => (
+                                                            <button key={opt} onClick={() => setReasoningEffort(opt)}
+                                                                className={`px-2.5 py-1 rounded-md text-[11px] leading-tight whitespace-nowrap transition-all ${effectiveEffort === opt ? 'bg-[var(--bg-body)] text-[var(--text-primary)] font-medium shadow-sm' : 'text-[var(--text-secondary)] hover:bg-[var(--hover-bg)]'}`}>
+                                                                {(t.effortLabels && t.effortLabels[opt]) || opt}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </>
+                        )}
+
+                        {/* чат */}
+                        <div className="flex-1 overflow-y-auto px-4 pt-20 pb-36 scrollbar-hide" ref={chatContainerRef} onScroll={handleChatScroll}>
+                            <div className="max-w-[700px] mx-auto">
+                                {!isChatsLoaded ? (
+                                    <div className="flex justify-center mt-20 text-[var(--text-secondary)]">...</div>
+                                ) : activeChat?.messages.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center mt-20 animate-slide-up">
+                                        {safeMode ? (
+                                            <div className="text-center opacity-30 mt-32">
+                                                <Icon name="pen-tool" className="w-16 h-16 mx-auto mb-4" />
+                                                <p>Начни печатать, чтобы создать заметку...</p>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <h1 className="text-5xl font-medium text-transparent bg-clip-text bg-gradient-to-r from-[#4285f4] via-[#9b72cb] to-[#d96570] mb-4 text-center">{t.greeting}, {nickname || t.guest}</h1>
+                                                <p className="text-2xl text-[var(--text-secondary)]">{t.helpPrompt}</p>
+                                            </>
+                                        )}
+                                    </div>
+                                ) : (
+                                    activeChat?.messages.map((msg) => (
+                                        <div key={msg.id} className="mb-8 animate-slide-up">
+                                            {msg.role === 'user' && (
+                                                <div className="flex flex-col items-end mb-2">
+                                                    {msg.attachments && msg.attachments.length > 0 && (
+                                                        <div className="flex flex-wrap gap-2 justify-end mb-2 max-w-[80%]">
+                                                            {msg.attachments.map((att, i) => (<img key={i} src={att.base64} className="max-w-[200px] max-h-[200px] object-cover rounded-2xl border border-[var(--border-color)]" alt="" />))}
+                                                        </div>
+                                                    )}
+                                                    {msg.text && (
+                                                        <div className="bg-[var(--bg-user-msg)] rounded-[20px] rounded-br-[4px] px-5 py-3 max-w-[80%]">
+                                                            <div className="whitespace-pre-wrap break-words">{msg.text}</div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {msg.role === 'model' && (
+                                                <div className="flex gap-4 group">
+                                                    {!safeMode && (
+                                                        <div className="w-8 h-8 rounded-full flex-shrink-0 mt-1 flex items-center justify-center bg-[var(--bg-sidebar)]">
+                                                            <ModelIcon icon={msg.icon} theme={theme} className="w-5 h-5" />
+                                                        </div>
+                                                    )}
+                                                    <div className={`flex-1 min-w-0 relative ${msg.isError ? 'text-red-400' : ''}`}>
+                                                        {!safeMode && (
+                                                            <SearchPanel searches={msg.searches} open={!!msg.searchOpen} t={t}
+                                                                running={(msg.searches || []).some(s => s.status === 'running')}
+                                                                onToggle={() => toggleSearchPanel(activeChatId, msg.id)} />
+                                                        )}
+                                                        {msg.isThinking && !msg.text ? (
+                                                            <div className="flex items-center gap-1.5 h-7 px-2">
+                                                                <div className="w-2 h-2 bg-[var(--text-secondary)] rounded-full animate-bounce"></div>
+                                                                <div className="w-2 h-2 bg-[var(--text-secondary)] rounded-full animate-bounce" style={{ animationDelay: '.15s' }}></div>
+                                                                <div className="w-2 h-2 bg-[var(--text-secondary)] rounded-full animate-bounce" style={{ animationDelay: '.3s' }}></div>
+                                                            </div>
+                                                        ) : (
+                                                            <MarkdownRenderer content={msg.text} />
+                                                        )}
+                                                        {!safeMode && !msg.isThinking && msg.text && (
+                                                            <MessageActions msg={msg} t={t}
+                                                                onReasoning={() => setReasoningModalMsg(msg)}
+                                                                onCost={() => setCostModalMsg(msg)} />
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+
+                        {/* композер */}
+                        <div className="absolute bottom-0 left-0 right-0 bg-[var(--bg-body)] p-4 pb-6">
+                            <div className="max-w-[760px] mx-auto relative">
+                                {attachments.length > 0 && (
+                                    <div className="flex gap-3 mb-3 px-2 overflow-x-auto scrollbar-slim">
+                                        {attachments.map((att, i) => (
+                                            <div key={i} className="relative w-16 h-16 flex-shrink-0 group">
+                                                <img src={att.base64} className="w-full h-full object-cover rounded-xl border border-[var(--border-color)]" alt="" />
+                                                <button onClick={() => setAttachments(prev => prev.filter((_, idx) => idx !== i))} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Icon name="x" className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                <div className="flex items-end gap-2 bg-[var(--bg-input)] rounded-[28px] p-2 pl-3">
+                                    {!safeMode && (
+                                        <>
+                                            <button onClick={() => document.getElementById('file-upload').click()} className="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-colors mb-0.5" title={t.attachPhoto}>
+                                                <Icon name="paperclip" className="w-5 h-5" />
+                                            </button>
+                                            <button onClick={() => setWebSearch(!webSearch)} disabled={currentModel.supportsTools === false}
+                                                className={`w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-full transition-colors mb-0.5 ${currentModel.supportsTools === false ? 'opacity-30 cursor-not-allowed' : (webSearch ? 'text-[var(--accent-blue)] bg-[var(--cost-bg)]' : 'text-[var(--text-secondary)] hover:bg-[var(--hover-bg)]')}`}
+                                                title={`${t.webSearch}: ${webSearch ? 'ON' : 'OFF'} — ${t.webSearchHint}`}>
+                                                <Icon name="globe" className="w-5 h-5" />
+                                            </button>
+                                        </>
+                                    )}
+                                    <input type="file" id="file-upload" multiple accept="image/*" className="hidden" onChange={handleFileChange} />
+                                    <textarea ref={textareaRef} value={input} onChange={(e) => setInput(e.target.value)}
+                                        onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+                                        onPaste={handlePaste} placeholder={t.inputPlaceholder} rows={1}
+                                        className="flex-1 bg-transparent text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none resize-none py-2 px-1 min-h-[40px] max-h-[200px]" />
+                                    {isGenerating ? (
+                                        <button onClick={handleStopGeneration} className="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-full mr-1 text-[var(--text-secondary)] hover:text-red-400 hover:bg-red-500/10 mb-0.5" title={t.stop}>
+                                            <div className="w-4 h-4 bg-current rounded-[2px]"></div>
+                                        </button>
+                                    ) : (
+                                        <button onClick={sendMessage} disabled={!input.trim() && attachments.length === 0}
+                                            className={`w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-full mr-1 mb-0.5 transition-all ${input.trim() || attachments.length ? 'text-[var(--text-primary)] hover:bg-[var(--hover-bg)]' : 'text-[var(--text-secondary)] opacity-50'}`} title={t.send}>
+                                            <Icon name="send-horizontal" className="w-5 h-5" />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {modals}
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<ErrorBoundary><App /></ErrorBoundary>);
+    </script>
+</body>
+</html>
