@@ -478,7 +478,7 @@
   'use strict';
 
   var DEFAULT_BASE = 'https://ai.vixle.top';
-  var ICONS = ['gemini', 'chatgpt', 'claude', 'deepseek', 'gemma', 'meta', 'openrouter', 'free', 'router', 'perplexity'];
+  var ICONS = ['gemini', 'chatgpt', 'claude', 'deepseek', 'gemma', 'openrouter'];
   /* подсказки, а не ограничение: воркер принимает любое значение вида [a-z][a-z0-9_-]{0,15} */
   var EFFORT_HINTS = ['none', 'minimal', 'low', 'medium', 'high', 'xhigh'];
   var EFFORT_RE = /^[a-z][a-z0-9_-]{0,15}$/i;
@@ -547,9 +547,6 @@
     if (s.indexOf('anthropic/') === 0 || s.indexOf('claude') > -1) return 'claude';
     if (s.indexOf('openrouter/') === 0) return 'openrouter';
     if (s.indexOf('deepseek') > -1) return 'deepseek';
-    if (s.indexOf('meta') > -1 || s.indexOf('llama') > -1) return 'meta';
-    if (s.indexOf('perplexity') > -1 || s.indexOf('sonar') > -1) return 'perplexity';
-    if (s.indexOf(':free') > -1) return 'free';
     return 'gemini';
   }
 
@@ -597,7 +594,7 @@
     return normalize({ id: '', name: '', description: '', icon: 'gemini', maxTokens: 8192 });
   }
   function blankRace() {
-    return normalize({ _race: true, id: 'race/', name: '', icon: 'free', free: true, supportsTools: false, vision: false, maxTokens: 4096 });
+    return normalize({ _race: true, id: 'race/', name: '', icon: 'openrouter', free: true, supportsTools: false, vision: false, maxTokens: 4096 });
   }
   function indexOfUid(uid) {
     for (var i = 0; i < models.length; i++) if (models[i]._uid === uid) return i;
