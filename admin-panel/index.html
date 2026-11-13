@@ -448,6 +448,13 @@
         <button class="ico" id="statReload" title="Перечитать статистику с сервера">↻</button>
       </div>
       <div id="statBody"><div class="cat-empty">Загрузка...</div></div>
+      <div class="sect">
+        <div class="sect-t">названия, цвета и порядок</div>
+        <div id="labelsBox"></div>
+        <div class="row" style="margin-top:12px;justify-content:flex-end">
+          <button class="btn sm primary" id="labelsSave">Сохранить</button>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -471,7 +478,7 @@
   'use strict';
 
   var DEFAULT_BASE = 'https://ai.vixle.top';
-  var ICONS = ['gemini', 'chatgpt', 'deepseek', 'gemma', 'meta', 'free', 'router', 'perplexity'];
+  var ICONS = ['gemini', 'chatgpt', 'claude', 'deepseek', 'gemma', 'meta', 'openrouter', 'free', 'router', 'perplexity'];
   /* подсказки, а не ограничение: воркер принимает любое значение вида [a-z][a-z0-9_-]{0,15} */
   var EFFORT_HINTS = ['none', 'minimal', 'low', 'medium', 'high', 'xhigh'];
   var EFFORT_RE = /^[a-z][a-z0-9_-]{0,15}$/i;
@@ -484,7 +491,9 @@
     meta: 'https://i.ibb.co/Q7fB6grM/image.png',
     free: 'https://i.ibb.co/3Yv1xq1K/image.png',
     perplexity: 'https://i.ibb.co/3Yv1xq1K/image.png',
-    router: 'https://i.ibb.co/kssPJfdp/image.png'
+    router: 'https://i.ibb.co/kssPJfdp/image.png',
+    claude: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Claude-ai-icon.svg/3840px-Claude-ai-icon.svg.png',
+    openrouter: 'https://i.ibb.co/S7WwsWLX/image.png'
   };
   var CHATGPT_SVG = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.073zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.5 2.6002 1.5v3.0043l-2.5998 1.5-2.6024-1.5z"/></svg>';
 
@@ -535,6 +544,8 @@
     if (s.indexOf('gemma') > -1) return 'gemma';
     if (s.indexOf('gemini') > -1 || s.indexOf('google/') === 0) return 'gemini';
     if (s.indexOf('openai/') === 0 || s.indexOf('gpt') > -1) return 'chatgpt';
+    if (s.indexOf('anthropic/') === 0 || s.indexOf('claude') > -1) return 'claude';
+    if (s.indexOf('openrouter/') === 0) return 'openrouter';
     if (s.indexOf('deepseek') > -1) return 'deepseek';
     if (s.indexOf('meta') > -1 || s.indexOf('llama') > -1) return 'meta';
     if (s.indexOf('perplexity') > -1 || s.indexOf('sonar') > -1) return 'perplexity';
@@ -574,7 +585,7 @@
     return {
       id: m.id, name: m.name, description: m.description, icon: m.icon, color: m.color,
       vision: m.vision, free: m.free, supportsTools: m.supportsTools, maxTokens: m.maxTokens,
-      temperature: m.temperature, provider: m._race ? null : m.provider,
+      temperature: null, provider: m._race ? null : m.provider,
       reasoning: m.reasoning, reasoningOptions: m.reasoningOptions,
       nativeSearch: m._race ? false : !!m.nativeSearch,
       pool: m._race ? m.pool : [], raceWindow: m.raceWindow
@@ -694,7 +705,6 @@
     if (m.supportsTools) b += '<span class="chip">tools</span>';
     if (m.nativeSearch && !m._race) b += '<span class="chip acc">свой поиск</span>';
     if (m.reasoning) b += '<span class="chip acc">' + esc(m.reasoning.effort) + (m.reasoningOptions.length > 1 ? ' ↕' : '') + '</span>';
-    if (m.temperature !== null) b += '<span class="chip">t° ' + esc(m.temperature) + '</span>';
     if (!m._race && m.provider) b += '<span class="chip">' + esc(m.provider.order.join(',')) + '</span>';
     if (!m._race && catalogIds && m.id && !catalogIds[m.id.trim()]) b += '<span class="chip warn">нет в каталоге</span>';
     return b;
@@ -795,14 +805,11 @@
       '<div style="margin-top:12px">' +
         fieldHtml('Описание', '', '<input class="fld" data-f="description" value="' + esc(m.description) + '">') +
       '</div>' +
-      '<div class="grid3" style="margin-top:12px">' +
+      '<div class="grid" style="margin-top:12px">' +
         fieldHtml('Иконка', '', '<select class="fld" data-f="icon">' + ICONS.map(function (o) {
           return '<option value="' + o + '"' + (!isUrlIcon && o === m.icon ? ' selected' : '') + '>' + o + '</option>';
         }).join('') + '</select>') +
         fieldHtml('Иконка по ссылке', '', '<input class="fld mono" data-f="iconUrl" value="' + esc(isUrlIcon ? m.icon : '') + '" placeholder="https://..." spellcheck="false">') +
-        fieldHtml('Цвет в статистике', '', '<div class="row" style="flex-wrap:nowrap">' +
-          '<input type="color" class="dev-color" data-f="color" value="' + esc(m.color || '#6b7280') + '">' +
-          '<button class="btn sm ghost" data-colorauto="1"' + (m.color ? '' : ' disabled') + '>Автоматически</button></div>') +
       '</div>' +
     '</div>';
 
@@ -811,8 +818,7 @@
     h += '<div class="sect"><div class="sect-t">ответ</div><div class="grid">' +
         fieldHtml('Макс. длина ответа', 'max_tokens',
           '<input class="fld mono" type="number" min="256" step="256" data-f="maxTokens" value="' + esc(m.maxTokens) + '">', maxNoteHtml(m)) +
-        fieldHtml('Температура', 'temperature',
-          '<input class="fld mono" type="number" min="0" max="2" step="0.1" data-f="temperature" value="' + (m.temperature === null ? '' : esc(m.temperature)) + '" placeholder="авто">') +
+        '<div></div>' +
       '</div></div>';
 
     h += '<div class="sect"><div class="sect-t">возможности</div>' +
@@ -2037,20 +2043,150 @@
 
   /* ---------- статистика по моделям (настоящие числа) ---------- */
   var statKey = 'all';
-  function statName(id) {
+  var labels = { order: [], labels: {} };
+  var statDevs = [];
+  function baseName(id) {
     var m = models.filter(function (x) { return x.id === id; })[0];
     if (m && m.name) return m.name;
     var c = catOf(id);
     return c ? shortName(c) : id;
   }
-  function statColor(id) {
+  function baseColor(id) {
     var m = models.filter(function (x) { return x.id === id; })[0];
     return (m && m.color) || autoModelColor(id);
   }
+  function statName(id) { var l = labels.labels[id]; return (l && l.name) || baseName(id); }
+  function statColor(id) { var l = labels.labels[id]; return (l && l.color) || baseColor(id); }
+  function labelCmp(a, b, fallback) {
+    var ia = labels.order.indexOf(a), ib = labels.order.indexOf(b);
+    if (ia > -1 && ib > -1) return ia - ib;
+    if (ia > -1) return -1;
+    if (ib > -1) return 1;
+    return fallback;
+  }
+  /* для <input type="color">: hsl автоцвета -> #rrggbb */
+  function toHex(c) {
+    if (/^#[0-9a-f]{6}$/i.test(c)) return c;
+    var m = /hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/.exec(c);
+    if (!m) return '#6b7280';
+    var h = +m[1] / 360, sat = +m[2] / 100, l = +m[3] / 100;
+    var q = l < 0.5 ? l * (1 + sat) : l + sat - l * sat, p = 2 * l - q;
+    var f = function (t) {
+      if (t < 0) t += 1; if (t > 1) t -= 1;
+      var v = t < 1 / 6 ? p + (q - p) * 6 * t : t < 1 / 2 ? q : t < 2 / 3 ? p + (q - p) * (2 / 3 - t) * 6 : p;
+      return ('0' + Math.round(v * 255).toString(16)).slice(-2);
+    };
+    return '#' + f(h + 1 / 3) + f(h) + f(h - 1 / 3);
+  }
+
+  function loadLabels() {
+    return api('/api/labels', { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { if (j && Array.isArray(j.order)) labels = { order: j.order, labels: j.labels || {} }; })
+      .catch(function () {});
+  }
+
+  /* все модели, что есть или были: из списка, из статистики и уже подписанные */
+  function labelIds() {
+    var req = {}, seen = {}, out = [];
+    statDevs.forEach(function (d) {
+      var src = d.realModels || {};
+      Object.keys(src).forEach(function (id) { req[id] = (req[id] || 0) + (Number(src[id].requests) || 0); });
+    });
+    var add = function (id) { if (id && !seen[id]) { seen[id] = true; out.push(id); } };
+    labels.order.forEach(add);
+    var rest = Object.keys(req).concat(Object.keys(labels.labels), models.map(function (m) { return m.id; }))
+      .filter(function (id) { return id && !seen[id]; });
+    rest.sort(function (x, y) { return (req[y] || 0) - (req[x] || 0); });
+    rest.forEach(add);
+    return { ids: out, req: req };
+  }
+
+  function renderLabels() {
+    var info = labelIds();
+    if (!info.ids.length) { $('labelsBox').innerHTML = '<div class="cat-empty">Моделей пока нет.</div>'; return; }
+    $('labelsBox').innerHTML = '<div class="plist" id="labelList">' + info.ids.map(function (id) {
+      var l = labels.labels[id] || {};
+      var n = info.req[id] || 0;
+      return '<div class="prow" draggable="true" data-lid="' + esc(id) + '">' +
+        '<span class="grip" title="Перетащить">⠿</span>' +
+        '<input type="color" class="dev-color" data-lcolor value="' + esc(toHex(statColor(id))) + '">' +
+        '<div class="pmain"><input class="fld" style="padding:6px 9px;font-size:13px" data-lname maxlength="60" value="' + esc(l.name || '') + '" placeholder="' + esc(baseName(id)) + '">' +
+          '<div class="mid mono" style="margin-top:3px">' + esc(id) + (n ? ' · ' + n + ' ' + reqWord(n) : '') + '</div></div>' +
+        '<button class="ico" data-lauto title="Автоматический цвет"' + (l.color ? '' : ' disabled') + '>⟲</button>' +
+      '</div>';
+    }).join('') + '</div>';
+  }
+
+  function collectLabels() {
+    var rows = [].slice.call($('labelsBox').querySelectorAll('[data-lid]'));
+    labels.order = rows.map(function (r) { return r.getAttribute('data-lid'); });
+  }
+
+  $('labelsBox').addEventListener('input', function (e) {
+    var row = e.target.closest('[data-lid]');
+    if (!row) return;
+    var id = row.getAttribute('data-lid');
+    var l = labels.labels[id] || { name: '', color: null };
+    if (e.target.hasAttribute('data-lname')) l.name = e.target.value;
+    if (e.target.hasAttribute('data-lcolor')) { l.color = e.target.value; row.querySelector('[data-lauto]').disabled = false; }
+    labels.labels[id] = l;
+  });
+  $('labelsBox').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-lauto]');
+    if (!btn) return;
+    var id = btn.closest('[data-lid]').getAttribute('data-lid');
+    if (labels.labels[id]) labels.labels[id].color = null;
+    collectLabels();
+    renderLabels();
+  });
+
+  /* перетаскивание строк */
+  var dragLid = null;
+  $('labelsBox').addEventListener('dragstart', function (e) {
+    var row = e.target.closest && e.target.closest('[data-lid]');
+    if (!row) return;
+    dragLid = row;
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', row.getAttribute('data-lid')); } catch (err) {}
+    row.style.opacity = '.4';
+  });
+  $('labelsBox').addEventListener('dragover', function (e) {
+    if (!dragLid) return;
+    e.preventDefault();
+    var row = e.target.closest('[data-lid]');
+    if (!row || row === dragLid) return;
+    var r = row.getBoundingClientRect();
+    row.parentNode.insertBefore(dragLid, e.clientY < r.top + r.height / 2 ? row : row.nextSibling);
+  });
+  $('labelsBox').addEventListener('dragend', function () {
+    if (dragLid) dragLid.style.opacity = '';
+    dragLid = null;
+    collectLabels();
+  });
+
+  $('labelsSave').addEventListener('click', function () {
+    collectLabels();
+    api('/api/labels', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(labels)
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.j.error || 'Ошибка сохранения');
+        labels = { order: res.j.order || [], labels: res.j.labels || {} };
+        toast('Названия и порядок сохранены', 'ok');
+        renderStats(statDevs);
+        renderLabels();
+      })
+      .catch(function (err) { toast(err.message, 'err', 6000); });
+  });
   function reqWord(n) { return plural(n, 'запрос', 'запроса', 'запросов'); }
 
   function loadStats() {
     $('statBody').innerHTML = '<div class="cat-empty">Загрузка...</div>';
+    var lp = loadLabels();
     var auth = { cache: 'no-store', headers: { 'Authorization': 'Bearer ' + token } };
     api('/api/usage/keys', auth)
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
@@ -2060,7 +2196,8 @@
         if (!groups.length) {
           $('statKey').innerHTML = '';
           $('statBody').innerHTML = '<div class="cat-empty">Пока никто ничего не спрашивал.</div>';
-          return;
+          statDevs = [];
+          return lp.then(renderLabels);
         }
         $('statKey').innerHTML = '<option value="all">Все ключи</option>' + groups.map(function (g) {
           return '<option value="' + esc(g.key) + '">ключ ' + esc(g.key.slice(0, 8)) + '… · ' + g.devices + ' уст.</option>';
@@ -2072,7 +2209,10 @@
           return api('/api/usage?key=' + encodeURIComponent(k), auth)
             .then(function (r) { return r.json(); })
             .then(function (j) { return j.devices || []; });
-        })).then(function (lists) { renderStats([].concat.apply([], lists)); });
+        })).then(function (lists) {
+          statDevs = [].concat.apply([], lists);
+          return lp.then(function () { renderStats(statDevs); renderLabels(); });
+        });
       })
       .catch(function (err) { $('statBody').innerHTML = '<div class="cat-empty">Ошибка: ' + esc(err.message) + '</div>'; });
   }
@@ -2089,7 +2229,7 @@
       });
     });
     var ids = Object.keys(totals).filter(function (id) { return totals[id].requests > 0; })
-      .sort(function (a, b) { return totals[b].requests - totals[a].requests; });
+      .sort(function (a, b) { return labelCmp(a, b, totals[b].requests - totals[a].requests); });
     if (!ids.length) { $('statBody').innerHTML = '<div class="cat-empty">Пока нет данных по моделям.</div>'; return; }
     var all = ids.reduce(function (s, id) { return s + totals[id].requests; }, 0);
 
@@ -2107,7 +2247,7 @@
     var people = devs.map(function (d) {
       var src = d.realModels || {};
       var list = Object.keys(src).filter(function (id) { return Number(src[id].requests) > 0; })
-        .sort(function (a, b) { return Number(src[b].requests) - Number(src[a].requests); });
+        .sort(function (a, b) { return labelCmp(a, b, Number(src[b].requests) - Number(src[a].requests)); });
       var tot = list.reduce(function (s, id) { return s + Number(src[id].requests); }, 0);
       return { d: d, list: list, tot: tot, src: src };
     }).filter(function (p) { return p.tot > 0; })

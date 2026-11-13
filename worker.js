@@ -190,6 +190,23 @@ function isAuthorized(request, env) {
    В KV лежат пары «код -> настоящий ключ OpenRouter». Клиент присылает код
    в Authorization, воркер подменяет его на ключ. Сам ключ браузеру не отдаётся. */
 const CODES_KEY = 'access_codes';
+const LABELS_KEY = 'model_labels';
+function cleanLabels(raw) {
+  const okId = (id) => typeof id === 'string' && id.length <= 120 && id.includes('/');
+  const src = raw && typeof raw === 'object' ? raw : {};
+  const order = Array.isArray(src.order) ? [...new Set(src.order.filter(okId))].slice(0, 300) : [];
+  const labels = {};
+  const inLabels = src.labels && typeof src.labels === 'object' ? src.labels : {};
+  for (const id of Object.keys(inLabels).slice(0, 300)) {
+    if (!okId(id)) continue;
+    const v = inLabels[id] || {};
+    const name = String(v.name || '').trim().slice(0, 60);
+    const color = normColor(v.color);
+    if (name || color) labels[id] = { name, color };
+  }
+  return { order, labels };
+}
+
 const GUESTLOG_KEY = 'guest_log';
 const GUESTLOG_MAX = 200;
 const CODES_TTL = 30000;                 // кэш в памяти изолята
@@ -451,6 +468,24 @@ export default {
     const path = url.pathname;
 
     if (request.method === 'OPTIONS') return new Response(null ,{ status: 204, headers: CORS });
+
+    /* ---- подписи моделей в статистике: имя, цвет, порядок (отдельно от списка моделей) ---- */
+    if (path === '/api/labels') {
+      if (request.method === 'GET') {
+        const stored = env.MODELS_STORE ? await env.MODELS_STORE.get(LABELS_KEY, 'json') : null;
+        return json(cleanLabels(stored));
+      }
+      if (request.method === 'POST') {
+        if (!isAuthorized(request, env)) return json({ error: 'Unauthorized' }, 401);
+        if (!env.MODELS_STORE) return json({ error: 'KV binding MODELS_STORE не настроен' }, 500);
+        let p;
+        try { p = await request.json(); } catch { return json({ error: 'Некорректный JSON' }, 400); }
+        const out = cleanLabels(p);
+        await env.MODELS_STORE.put(LABELS_KEY, JSON.stringify(out));
+        return json({ ok: true, ...out });
+      }
+      return json({ error: 'Method Not Allowed' }, 405);
+    }
 
     /* ---- /api/models ---- */
     if (path === '/api/models') {

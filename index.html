@@ -577,6 +577,8 @@
         const GemmaIcon = imgIcon("https://i.ibb.co/G4Zdnf7Y/image.png");
         const MetaIcon = imgIcon("https://i.ibb.co/Q7fB6grM/image.png");
         const PerplexityIcon = imgIcon("https://i.ibb.co/3Yv1xq1K/image.png");
+        const ClaudeIcon = imgIcon("https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Claude-ai-icon.svg/3840px-Claude-ai-icon.svg.png");
+        const OpenRouterIcon = imgIcon("https://i.ibb.co/S7WwsWLX/image.png");
         const RouterIcon = ({ className, active = true, theme }) => (
             <img src={theme === 'light' ? 'https://i.ibb.co/23g12YV6/image.png' : 'https://i.ibb.co/kssPJfdp/image.png'}
                  className={`${className} transition-all duration-300 ${!active ? 'grayscale opacity-40' : ''}`} alt="" draggable="false" />
@@ -596,6 +598,8 @@
                 case 'meta': return <MetaIcon className={className} active={active} />;
                 case 'free': return <FreeOptionIcon className={className} active={active} />;
                 case 'perplexity': return <PerplexityIcon className={className} active={active} />;
+                case 'claude': return <ClaudeIcon className={className} active={active} />;
+                case 'openrouter': return <OpenRouterIcon className={className} active={active} />;
                 case 'router': return <RouterIcon className={className} active={active} theme={theme} />;
                 default: return <GeminiIcon className={className} active={active} />;
             }
@@ -888,6 +892,7 @@
             const [keyHash, setKeyHash] = useState(null);
             const [isBalanceOpen, setIsBalanceOpen] = useState(false);
             const [statsOpen, setStatsOpen] = useState(false);
+            const [modelLabels, setModelLabels] = useState({ order: [], labels: {} });
             const keyHashRef = useRef(null);
             const [keyInfo, setKeyInfo] = useState({ kind: 'none', label: '' });
             const [myTag, setMyTag] = useState(null);
@@ -1063,6 +1068,16 @@
                     pollCost(g.id, null, null, g.reqInc || 0, g.modelId || '');
                 }
             };
+
+            const loadLabels = async () => {
+                try {
+                    const res = await fetch(`${API_BASE}/labels`, { cache: 'no-store' });
+                    if (!res.ok) return;
+                    const d = await res.json();
+                    if (d && Array.isArray(d.order)) setModelLabels({ order: d.order, labels: d.labels || {} });
+                } catch (e) {}
+            };
+            useEffect(() => { loadLabels(); }, []);
 
             const loadUsage = async (hash) => {
                 const h = hash || keyHashRef.current;
@@ -1740,12 +1755,22 @@
                 (models || []).forEach((m) => { map[m.id] = m; });
                 return map;
             }, [models]);
-            const modelName = (id) => (modelInfo[id] && modelInfo[id].name) || id;
+            const labelOf = (id) => (modelLabels.labels && modelLabels.labels[id]) || {};
+            const modelName = (id) => labelOf(id).name || (modelInfo[id] && modelInfo[id].name) || id;
             /* участника гонки может не быть в списке сайта — делаем имя из id: meta/llama-5-scout:free -> Llama 5 Scout */
-            const raceLabel = (id) => (modelInfo[id] && modelInfo[id].name) ||
+            const raceLabel = (id) => labelOf(id).name || (modelInfo[id] && modelInfo[id].name) ||
                 String(id).split('/').pop().replace(/:free$/, '').split(/[-_]+/).filter(Boolean)
                     .map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-            const modelColor = (id) => (modelInfo[id] && modelInfo[id].color) || autoModelColor(id);
+            const modelColor = (id) => labelOf(id).color || (modelInfo[id] && modelInfo[id].color) || autoModelColor(id);
+            /* порядок из админки; модели без места — в конце, по числу запросов */
+            const labelOrder = (a, b, fallback) => {
+                const order = modelLabels.order || [];
+                const ia = order.indexOf(a), ib = order.indexOf(b);
+                if (ia > -1 && ib > -1) return ia - ib;
+                if (ia > -1) return -1;
+                if (ib > -1) return 1;
+                return fallback;
+            };
 
             /* для статистики по моделям нужны и устройства, у которых были только бесплатные запросы */
             const statsDevices = useMemo(() => {
@@ -1764,7 +1789,7 @@
             }, [usageDevices, usageBars, myTag]);
             const reqText = (n) => `${n} ${activeLang === 'ru' ? plural(n, 'запрос', 'запроса', 'запросов') : t.deviceRequests}`;
 
-            const openBalance = () => { setIsBalanceOpen(true); setStatsOpen(false); fetchBalance(); loadUsage(); };
+            const openBalance = () => { setIsBalanceOpen(true); setStatsOpen(false); fetchBalance(); loadUsage(); loadLabels(); };
 
             const balanceBar = (
                 <div className="w-full h-1.5 bg-[var(--border-color)] rounded-full overflow-hidden flex">
@@ -1921,7 +1946,7 @@
                                             {statsDevices.map(s => {
                                                 const entries = Object.entries(s.models || {})
                                                     .filter(([, v]) => Number(v.requests) > 0)
-                                                    .sort((a, b) => Number(b[1].requests) - Number(a[1].requests));
+                                                    .sort((a, b) => labelOrder(a[0], b[0], Number(b[1].requests) - Number(a[1].requests)));
                                                 const tot = entries.reduce((x, [, v]) => x + Number(v.requests), 0);
                                                 return (
                                                     <div key={s.tag} className="p-3 rounded-xl bg-[var(--bg-input)] border border-[var(--border-color)]">
